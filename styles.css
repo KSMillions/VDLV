@@ -1487,15 +1487,29 @@ body {
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
   opacity: 0;
+  pointer-events: none;
+  /* NEVER block taps when hidden */
   transition: opacity 0.25s ease;
 }
 
 .mobile-overlay-bg.visible {
   opacity: 1;
+  pointer-events: all;
+  /* Allow tap-to-dismiss when shown */
 }
 
 /* ─── TABLET (768px) ────────────────────────────────────── */
 @media (max-width: 768px) {
+
+  /* Show the bottom nav bar */
+  .bottom-nav {
+    display: block;
+  }
+
+  /* Push entire content above the 60px fixed bottom nav */
+  .main-content {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  }
 
   /* Sidebar hidden by default, slides in as drawer */
   .sidebar {
@@ -1627,12 +1641,14 @@ body {
     border-radius: var(--radius-full);
   }
 
-  /* Input bar sits above bottom nav */
+  /* Input bar sits above bottom nav — must have z-index to stay tappable */
   .input-bar {
     padding: 8px 10px;
     padding-bottom: calc(8px + env(safe-area-inset-bottom));
-    margin-bottom: 60px;
-    /* height of bottom nav */
+    margin-bottom: 0;
+    position: relative;
+    z-index: 10;
+    /* Above any residual overlay */
   }
 
   /* Larger send button for thumb */
@@ -1642,9 +1658,11 @@ body {
     font-size: 18px;
   }
 
-  /* Quick prompts above bottom nav */
+  /* Quick prompts must sit above overlay, below bottom nav */
   .quick-prompts {
     padding: 7px 10px 5px;
+    position: relative;
+    z-index: 10;
   }
 
   /* Disclaimer shorter on mobile */

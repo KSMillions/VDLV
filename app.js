@@ -584,13 +584,18 @@ settingsModal?.addEventListener('click', function (e) {
 function showOverlay() {
     const overlay = document.getElementById('mobileOverlay');
     if (overlay && window.innerWidth <= 768) {
-        overlay.classList.add('visible');
+        overlay.style.display = 'block';
+        // Let display:block paint first, then fade in
+        requestAnimationFrame(() => overlay.classList.add('visible'));
     }
 }
 
 function hideOverlay() {
     const overlay = document.getElementById('mobileOverlay');
-    if (overlay) overlay.classList.remove('visible');
+    if (!overlay) return;
+    overlay.classList.remove('visible');
+    // Remove from layout after fade-out so it can NEVER intercept taps
+    setTimeout(() => { overlay.style.display = 'none'; }, 280);
 }
 
 function closeMobileOverlay() {
