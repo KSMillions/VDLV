@@ -1,0 +1,21 @@
+{
+    "name": "vdlv-jbcc-assistant",
+    "version": "2.0.0",
+    "description": "JBCC Contracts & Site Management AI Assistant — J.C. Van der Linde & Venter Projects (Pty) Ltd",
+    "private": true,
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "scripts": {
+        "dev": "npx serve .",
+        "vercel-dev": "npx vercel dev"
+    },
+    "keywords": [
+        "jbcc",
+        "construction",
+        "contracts",
+        "south-africa"
+    ],
+    "author": "VDLV Projects",
+    "license": "UNLICENSED"
+}

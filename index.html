@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>VDLV-JBCC Assistant — J.C. Van der Linde &amp; Venter Projects</title>
+  <meta name="description"
+    content="JBCC Contracts Assistant for J.C. Van der Linde &amp; Venter Projects (Pty) Ltd — AI-powered site and contracts management support.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!--  APP SHELL                                                  -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="app-shell">
+
+    <!-- ───────────────────────── SIDEBAR ────────────────────── -->
+    <nav class="sidebar" id="sidebar">
+
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="logo-mark">VV</div>
+          <div class="logo-text">VDLV-JBCC<br>Assistant</div>
+        </div>
+        <div class="logo-sub">J.C. Van der Linde &amp; Venter Projects (Pty) Ltd</div>
+      </div>
+
+      <div class="sidebar-section">
+
+        <div class="sidebar-label">Chat</div>
+        <div class="sidebar-item active" onclick="sidebarNav('chat')">
+          <span class="item-icon">💬</span> Current Session
+        </div>
+        <div class="sidebar-item" onclick="sidebarNav('clear')">
+          <span class="item-icon">🗑️</span> Clear Chat
+        </div>
+
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-label">Reference</div>
+
+        <div class="sidebar-item" onclick="sidebarNav('clauses')">
+          <span class="item-icon">📋</span> JBCC Clause Library
+        </div>
+        <div class="sidebar-item" onclick="sidebarNav('docs')">
+          <span class="item-icon">✅</span> Document Checklist
+        </div>
+        <div class="sidebar-item" onclick="sidebarNav('startup')">
+          <span class="item-icon">🚀</span> Project Start Up
+        </div>
+
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-label">Tools</div>
+
+        <div class="sidebar-item" onclick="sidebarNav('settings')">
+          <span class="item-icon">⚙️</span> Settings &amp; API Key
+        </div>
+
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-badge">
+          <div class="badge-dot"></div>
+          <div class="badge-text">
+            <strong>VDLV-JBCC v2.0</strong>
+            Contracts &amp; Site AI
+          </div>
+        </div>
+      </div>
+
+    </nav>
+
+    <!-- ─────────────────────── MAIN CONTENT ─────────────────── -->
+    <div class="main-content">
+
+      <!-- BRAND STRIP -->
+      <div class="brand-strip">
+        <span class="brand-name">J.C. Van der Linde &amp; Venter Projects (Pty) Ltd</span>
+        <span class="brand-tag">VDLV-JBCC</span>
+      </div>
+
+      <!-- TOP BAR -->
+      <header class="topbar">
+        <button class="topbar-toggle" onclick="toggleSidebar()" title="Toggle sidebar"
+          aria-label="Toggle sidebar">☰</button>
+        <div class="topbar-avatar">VV</div>
+        <div class="topbar-info">
+          <div class="topbar-name">VDLV-JBCC Contracts Assistant</div>
+          <div class="topbar-status"><span>●</span> Online &middot; Contracts &amp; Site Management AI</div>
+        </div>
+        <div class="topbar-actions">
+          <button class="topbar-btn" id="btn-clauses" onclick="toggleRefPanel()"
+            title="JBCC Clause Reference">📋</button>
+          <button class="topbar-btn" id="btn-docs" onclick="toggleDocPanel()" title="Document Checklist">✅</button>
+          <button class="topbar-btn" onclick="clearChat()" title="Clear chat">🗑️</button>
+          <button class="topbar-btn" id="btn-settings" onclick="openSettings()" title="Settings">⚙️</button>
+        </div>
+      </header>
+
+      <!-- DISCLAIMER -->
+      <div class="disclaimer">
+        ⚠️ AI guidance only — always verify against your official JBCC contract documents and seek qualified legal
+        advice where required
+      </div>
+
+      <!-- CHAT ROW: area + side panels -->
+      <div style="flex:1; display:flex; overflow:hidden; min-height:0;">
+
+        <!-- CHAT AREA -->
+        <div class="chat-area" id="chatArea">
+
+          <div class="date-divider">
+            <div class="date-pill" id="chatDatePill">Today</div>
+          </div>
+
+          <!-- Welcome Screen -->
+          <div id="welcomeScreen" class="welcome-screen">
+            <div class="welcome-logo">VV</div>
+            <div class="welcome-title">VDLV-JBCC Assistant</div>
+            <div class="welcome-sub">
+              Your dedicated AI assistant for <strong>J.C. Van der Linde &amp; Venter Projects (Pty)
+                Ltd</strong>.<br><br>
+              I have expert knowledge of the entire <strong>JBCC Suite of Contracts</strong> — including the PBA 6th
+              Edition, Minor Works Agreement, and N/S Subcontract. Ask me anything about contract administration,
+              payments, EOT, disputes, and more.
+            </div>
+            <div class="welcome-tags">
+              <span class="welcome-tag">JBCC PBA 6th Ed</span>
+              <span class="welcome-tag">Minor Works</span>
+              <span class="welcome-tag">N/S Subcontract</span>
+              <span class="welcome-tag">South African Construction</span>
+            </div>
+          </div>
+
+          <!-- Existing conversation messages will be appended here by app.js -->
+
+        </div>
+
+        <!-- ─── CLAUSE REFERENCE PANEL ──────────────────────── -->
+        <aside class="ref-panel hidden" id="refPanel">
+          <div class="panel-header">
+            <div class="panel-title">📋 JBCC Clause Library</div>
+            <button class="panel-close" onclick="closeRefPanel()" aria-label="Close panel">✕</button>
+          </div>
+          <div class="panel-body">
+
+            <div style="font-size:11.5px;color:var(--text-muted);padding:4px 0 12px;line-height:1.5;">
+              Tap any clause to ask the assistant about it.
+            </div>
+
+            <!-- PBA CLAUSES -->
+            <div
+              style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);padding:4px 0 8px;opacity:0.7;">
+              PBA 6th Edition — Key Clauses
+            </div>
+
+            <div class="clause-card" onclick="askAboutClause('Clause 6.0','Principal Agent duties and powers')">
+              <div class="clause-card-num">Clause 6.0</div>
+              <div class="clause-card-title">Principal Agent</div>
+              <div class="clause-card-desc">Duties, powers, obligations and limitations of the PA</div>
+            </div>
+
+            <div class="clause-card" onclick="askAboutClause('Clause 13.0','Performance Guarantee requirements')">
+              <div class="clause-card-num">Clause 13.0</div>
+              <div class="clause-card-title">Performance Guarantee</div>
+              <div class="clause-card-desc">Contractor's performance guarantee requirements and calling process</div>
+            </div>
+
+            <div class="clause-card"
+              onclick="askAboutClause('Clause 16.0','Subcontractor management and requirements')">
+              <div class="clause-card-num">Clause 16.0</div>
+              <div class="clause-card-title">Subcontractors</div>
+              <div class="clause-card-desc">Nominated, selected, and domestic subcontractor provisions</div>
+            </div>
+
+            <div class="clause-card"
+              onclick="askAboutClause('Clause 23.0','Variations and adjustments to contract sum')">
+              <div class="clause-card-num">Clause 23.0</div>
+              <div class="clause-card-title">Variations</div>
+              <div class="clause-card-desc">Instructing, valuing, and administering variations</div>
+            </div>
+
+            <div class="clause-card" onclick="askAboutClause('Clause 25.0','Extension of Time claims and procedures')">
+              <div class="clause-card-num">Clause 25.0</div>
+              <div class="clause-card-title">Extension of Time</div>
+              <div class="clause-card-desc">EOT grounds, notice requirements, and procedures</div>
+            </div>
+
+            <div class="clause-card"
+              onclick="askAboutClause('Clause 25.4','Delay Damages (penalties) calculation and application')">
+              <div class="clause-card-num">Clause 25.4</div>
+              <div class="clause-card-title">Delay Damages</div>
+              <div class="clause-card-desc">Liquidated damages — when they apply and how to reduce them</div>
+            </div>
+
+            <div class="clause-card"
+              onclick="askAboutClause('Clause 28.0','Practical Completion certificate and process')">
+              <div class="clause-card-num">Clause 28.0</div>
+              <div class="clause-card-title">Practical Completion</div>
+              <div class="clause-card-desc">Procedures, certificate timing, and what it triggers</div>
+            </div>
+
+            <div class="clause-card"
+              onclick="askAboutClause('Clause 29.0','Defects Liability Period and Works Completion')">
+              <div class="clause-card-num">Clause 29.0</div>
+              <div class="clause-card-title">Defects Liability Period</div>
+              <div class="clause-card-desc">DLP duration, obligations, and Works Completion certificate</div>
+            </div>
+
+            <div class="clause-card"
+              onclick="askAboutClause('Clause 31.0','Interim payment certificates and recovery statements')">
+              <div class="clause-card-num">Clause 31.0</div>
+              <div class="clause-card-title">Interim Payments</div>
+              <div class="clause-card-desc">Recovery Statements, payment cycles, late payment interest</div>
+            </div>
+
+            <div class="clause-card" onclick="askAboutClause('Clause 32.0','Final account and certificate procedures')">
+              <div class="clause-card-num">Clause 32.0</div>
+              <div class="clause-card-title">Final Account</div>
+              <div class="clause-card-desc">Final Recovery Statement, final certificate, and retention release</div>
+            </div>
+
+            <div class="clause-card"
+              onclick="askAboutClause('Clause 35.0','Contract termination by Employer procedures')">
+              <div class="clause-card-num">Clause 35.0</div>
+              <div class="clause-card-title">Termination by Employer</div>
+              <div class="clause-card-desc">Grounds, notice procedure and consequences</div>
+            </div>
+
+            <div class="clause-card"
+              onclick="askAboutClause('Clause 36.0','Contract termination by Contractor procedures')">
+              <div class="clause-card-num">Clause 36.0</div>
+              <div class="clause-card-title">Termination by Contractor</div>
+              <div class="clause-card-desc">Contractor's right to terminate for non-payment or prevention</div>
+            </div>
+
+            <div class="clause-card" onclick="askAboutClause('Clause 40.0','Mediation under the JBCC contract')">
+              <div class="clause-card-num">Clause 40.0</div>
+              <div class="clause-card-title">Mediation</div>
+              <div class="clause-card-desc">First-tier dispute resolution process</div>
+            </div>
+
+            <div class="clause-card"
+              onclick="askAboutClause('Clause 41.0','Adjudication procedures and ASAQS process')">
+              <div class="clause-card-num">Clause 41.0</div>
+              <div class="clause-card-title">Adjudication</div>
+              <div class="clause-card-desc">Binding dispute resolution — procedure, timings, enforcement</div>
+            </div>
+
+            <div class="clause-card" onclick="askAboutClause('Clause 42.0','Arbitration under AFSA rules')">
+              <div class="clause-card-num">Clause 42.0</div>
+              <div class="clause-card-title">Arbitration</div>
+              <div class="clause-card-desc">Final and binding dispute resolution under AFSA rules</div>
+            </div>
+
+          </div>
+        </aside>
+
+        <!-- ─── DOCUMENT CHECKLIST PANEL ───────────────────── -->
+        <aside class="doc-panel hidden" id="docPanel">
+          <div class="panel-header">
+            <div class="panel-title">✅ Document Checklist</div>
+            <button class="panel-close" onclick="closeDocPanel()" aria-label="Close panel">✕</button>
+          </div>
+          <div class="panel-body" style="padding:0;">
+
+            <div class="checklist-category">Project Start-Up</div>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Signed JBCC Contract Documents</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Performance Guarantee in place</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Contract Works Insurance certificate issued</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Public Liability Insurance certificate issued</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">COIDA / Compensation for Occupational Injuries confirmed</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Construction programme submitted &amp; approved</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Health &amp; Safety plan submitted (OHSAS / Construction Regs)</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">CIDB registration verified</span>
+            </label>
+
+            <div class="checklist-category">Monthly Site Admin</div>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Recovery Statement submitted on time</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Interim Payment Certificate received within 7 days</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Variation register up to date</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Site instructions register maintained</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Daily site diary completed</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Programme updated and submitted</span>
+            </label>
+
+            <div class="checklist-category">EOT &amp; Claims</div>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Delay event notified within 14 days (Clause 25.0)</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">EOT particulars submitted within 14 days</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Updated programme submitted with EOT claim</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">EOT decision received from Principal Agent</span>
+            </label>
+
+            <div class="checklist-category">Practical Completion</div>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Written notification of PC issued to Principal Agent</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Practical Completion Certificate received</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Snag list agreed and signed off</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Retention reduced to 5% (half released)</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">As-built drawings and O&amp;M manuals submitted</span>
+            </label>
+
+            <div class="checklist-category">Final Account</div>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Works Completion Certificate received</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Final Recovery Statement submitted (within 90 days of PC)</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Final Payment Certificate received</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Full retention released</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" onchange="saveChecklist()">
+              <span class="checklist-text">Performance Guarantee returned / cancelled</span>
+            </label>
+
+          </div>
+        </aside>
+
+        <!-- ─── PROJECT START UP PANEL ─────────────────────── -->
+        <aside class="startup-panel hidden" id="startupPanel">
+          <div class="panel-header">
+            <div class="panel-title">🚀 Project Start Up</div>
+            <button class="panel-close" onclick="closeStartupPanel()" aria-label="Close panel">✕</button>
+          </div>
+
+          <!-- Progress bar -->
+          <div class="startup-progress-bar" id="startupProgressBar">
+            <div class="startup-progress-inner" id="startupProgressInner" style="width:0%"></div>
+          </div>
+          <div class="startup-progress-label" id="startupProgressLabel">0 of 48 complete</div>
+
+          <div class="panel-body" style="padding:0;">
+
+            <!-- Reset button -->
+            <div style="padding:10px 14px 2px;display:flex;justify-content:flex-end;">
+              <button class="startup-reset-btn" onclick="resetStartup()">↺ Reset All</button>
+            </div>
+
+            <!-- ═══ CONTRACTS MANAGER ═══ -->
+            <div class="startup-role-header">
+              <span class="startup-role-icon">📁</span> Contracts Manager
+            </div>
+
+            <div class="startup-item" data-sid="cm01">
+              <span class="startup-num">1</span>
+              <span class="startup-text">Receive letter of Appointment</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm01','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm01','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm02">
+              <span class="startup-num">2</span>
+              <span class="startup-text">Fill Contract Request and send to Office</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm02','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm02','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm03">
+              <span class="startup-num">3</span>
+              <span class="startup-text">Send VV Bank confirmation to client for signature and submit to office once
+                returned from client</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm03','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm03','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm04">
+              <span class="startup-num">4</span>
+              <span class="startup-text">Office open Project with number</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm04','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm04','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm05">
+              <span class="startup-num">5</span>
+              <span class="startup-text">Receive Draft Guarantee from Office and sent to PA for approval</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm05','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm05','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm06">
+              <span class="startup-num">6</span>
+              <span class="startup-text">Receive Insurance Cover Letter from Office and sent to PA for approval</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm06','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm06','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm07">
+              <span class="startup-num">7</span>
+              <span class="startup-text">Once Point 5 accepted, inform Office to formalize</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm07','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm07','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm08">
+              <span class="startup-num">8</span>
+              <span class="startup-text">Obtain Signing Contract and send to Jim; once received send to office</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm08','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm08','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm09">
+              <span class="startup-num">9</span>
+              <span class="startup-text">Obtain JBCC Possession of Site Certificate from PA</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm09','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm09','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm10">
+              <span class="startup-num">10</span>
+              <span class="startup-text">Compile Project Program Baseline Draft and send to PA for approval</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm10','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm10','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm11">
+              <span class="startup-num">11</span>
+              <span class="startup-text">Compile RFI and send to PA for approval</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm11','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm11','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm12">
+              <span class="startup-num">12</span>
+              <span class="startup-text">Once RFI approved, set online dates to send reminders</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm12','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm12','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm13">
+              <span class="startup-num">13</span>
+              <span class="startup-text">Obtain approved Site Development Plan from PA to display</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm13','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm13','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm14">
+              <span class="startup-num">14</span>
+              <span class="startup-text">Send P&amp;Q Breakdown to Principal Quantity Surveyor</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm14','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm14','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm15">
+              <span class="startup-num">15</span>
+              <span class="startup-text">Arrange for Electrical Site point connection as per T&amp;C's</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm15','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm15','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm16">
+              <span class="startup-num">16</span>
+              <span class="startup-text">Arrange for Water Site point connection as per T&amp;C's</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm16','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm16','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm17">
+              <span class="startup-num">17</span>
+              <span class="startup-text">Take start off photo of both meters above for record purposes</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm17','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm17','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm18">
+              <span class="startup-num">18</span>
+              <span class="startup-text">Arrange Container transportation to site</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm18','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm18','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm19">
+              <span class="startup-num">19</span>
+              <span class="startup-text">Bill strip and obtain better prices on Subcontractors</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm19','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm19','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm20">
+              <span class="startup-num">20</span>
+              <span class="startup-text">Bill strip and obtain better prices on Suppliers</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm20','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm20','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm21">
+              <span class="startup-num">21</span>
+              <span class="startup-text">Appointments — Subcontractors</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm21','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm21','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm22">
+              <span class="startup-num">22</span>
+              <span class="startup-text">Bulk Orders — Suppliers</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm22','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm22','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm23">
+              <span class="startup-num">23</span>
+              <span class="startup-text">Send Dilapidation Report received from Foreman to PA</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm23','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm23','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm24">
+              <span class="startup-num">24</span>
+              <span class="startup-text">Check Scaffold requirement and make orders to yard</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm24','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm24','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm25">
+              <span class="startup-num">25</span>
+              <span class="startup-text">Check Banana bucket requirement and make order to yard</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm25','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm25','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm26">
+              <span class="startup-num">26</span>
+              <span class="startup-text">Bulk Platform acceptance — Direct Subbie / Engineer / Principal Agent</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm26','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm26','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm27">
+              <span class="startup-num">27</span>
+              <span class="startup-text">Obtain Level Survey from Subcontractor and submit to PQS</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm27','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm27','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm28">
+              <span class="startup-num">28</span>
+              <span class="startup-text">Materials — Obtain Soil Grading Analysis and submit to Engineer</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm28','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm28','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm29">
+              <span class="startup-num">29</span>
+              <span class="startup-text">Materials — Obtain Concrete Mix Designs and submit to Engineer</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm29','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm29','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm30">
+              <span class="startup-num">30</span>
+              <span class="startup-text">Materials — Obtain Brick Strength Analysis and submit to Client</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm30','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm30','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm31">
+              <span class="startup-num">31</span>
+              <span class="startup-text">Obtain Building Sand Analysis and submit to Engineer</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm31','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm31','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm32">
+              <span class="startup-num">32</span>
+              <span class="startup-text">Obtain Plaster Sand Analysis and submit to Engineer</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm32','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm32','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm33">
+              <span class="startup-num">33</span>
+              <span class="startup-text">Submit Quality Assurance Quality Report to PA for approval</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm33','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm33','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm34">
+              <span class="startup-num">34</span>
+              <span class="startup-text">Send Progress Report Template to PA for approval</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm34','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm34','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="cm35">
+              <span class="startup-num">35</span>
+              <span class="startup-text">Send Technical Query Format and register to PA for approval</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('cm35','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('cm35','no')">NO</button>
+              </div>
+            </div>
+
+            <!-- ═══ SAFETY OFFICER ═══ -->
+            <div class="startup-role-header">
+              <span class="startup-role-icon">🦺</span> Safety Officer
+            </div>
+
+            <div class="startup-item" data-sid="so01">
+              <span class="startup-num">1</span>
+              <span class="startup-text">Fill Department of Labour Notice of Construction</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('so01','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('so01','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="so02">
+              <span class="startup-num">2</span>
+              <span class="startup-text">Submit NOC and get stamped</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('so02','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('so02','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="so03">
+              <span class="startup-num">3</span>
+              <span class="startup-text">Do safety file and submit to client Safety Officer</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('so03','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('so03','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="so04">
+              <span class="startup-num">4</span>
+              <span class="startup-text">Attend above audit and rectify audit findings</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('so04','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('so04','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="so05">
+              <span class="startup-num">5</span>
+              <span class="startup-text">Arrange for Site Induction book from office</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('so05','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('so05','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="so06">
+              <span class="startup-num">6</span>
+              <span class="startup-text">Audit Subcontractor Files for approval to start</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('so06','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('so06','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="so07">
+              <span class="startup-num">7</span>
+              <span class="startup-text">Arrange Site Induction Stickers</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('so07','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('so07','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="so08">
+              <span class="startup-num">8</span>
+              <span class="startup-text">Arrange for Project Start off Site induction with Prof Team</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('so08','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('so08','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="so09">
+              <span class="startup-num">9</span>
+              <span class="startup-text">Arrange for Project Start off Site induction with Appointed
+                Subcontractors</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('so09','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('so09','no')">NO</button>
+              </div>
+            </div>
+
+            <!-- ═══ FOREMAN ═══ -->
+            <div class="startup-role-header">
+              <span class="startup-role-icon">🪖</span> Foreman
+            </div>
+
+            <div class="startup-item" data-sid="fo01">
+              <span class="startup-num">1</span>
+              <span class="startup-text">Arrange for Site establishment requirements</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('fo01','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('fo01','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="fo02">
+              <span class="startup-num">2</span>
+              <span class="startup-text">Do Dilapidation Report and submit to Contracts Manager</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('fo02','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('fo02','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="fo03">
+              <span class="startup-num">3</span>
+              <span class="startup-text">Check Labour force requirement with Contracts Manager</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('fo03','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('fo03','no')">NO</button>
+              </div>
+            </div>
+            <div class="startup-item" data-sid="fo04">
+              <span class="startup-num">4</span>
+              <span class="startup-text">Check tool &amp; Equipment requirements</span>
+              <div class="startup-yn">
+                <button class="yn-btn yes" onclick="setYN('fo04','yes')">YES</button>
+                <button class="yn-btn no" onclick="setYN('fo04','no')">NO</button>
+              </div>
+            </div>
+
+          </div>
+        </aside>
+
+      </div><!-- end chat row -->
+
+      <!-- QUICK PROMPTS -->
+      <div class="quick-prompts" id="quickPrompts">
+        <div class="quick-chip" onclick="sendQuick('What is Practical Completion under the JBCC PBA?')">Practical
+          Completion</div>
+        <div class="quick-chip" onclick="sendQuick('How does the JBCC payment process and Recovery Statement work?')">
+          Payment Process</div>
+        <div class="quick-chip" onclick="sendQuick('How do I claim an Extension of Time under JBCC?')">Extension of Time
+        </div>
+        <div class="quick-chip" onclick="sendQuick('What are the Principal Agent duties under JBCC?')">Principal Agent
+        </div>
+        <div class="quick-chip" onclick="sendQuick('How does JBCC adjudication work?')">Adjudication</div>
+        <div class="quick-chip" onclick="sendQuick('How are variations valued and administered under JBCC?')">Variations
+        </div>
+        <div class="quick-chip" onclick="sendQuick('What are delay damages under JBCC and when do they apply?')">Delay
+          Damages</div>
+        <div class="quick-chip" onclick="sendQuick('How do I handle defects under JBCC during and after the DLP?')">
+          Defects &amp; DLP</div>
+        <div class="quick-chip" onclick="sendQuick('What are the contract termination procedures under JBCC?')">
+          Termination</div>
+        <div class="quick-chip" onclick="sendQuick('What insurance and guarantees are required under JBCC?')">Insurance
+          &amp; Bonds</div>
+      </div>
+
+      <!-- INPUT BAR -->
+      <div class="input-bar">
+        <div class="input-wrapper">
+          <button class="input-icon-btn" title="Emoji" aria-label="Emoji">😊</button>
+          <textarea id="userInput" rows="1" placeholder="Ask about JBCC contracts, clauses, procedures…"
+            aria-label="Message input"></textarea>
+          <button class="input-icon-btn" onclick="attachDoc()" title="Attach document"
+            aria-label="Attach document">📎</button>
+        </div>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Send message" aria-label="Send">
+          ➤
+        </button>
+      </div>
+
+    </div><!-- end main-content -->
+
+  </div><!-- end app-shell -->
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!--  MOBILE OVERLAY BACKDROP                                    -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="mobile-overlay-bg" id="mobileOverlay" onclick="closeMobileOverlay()"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!--  MOBILE BOTTOM NAVIGATION                                   -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation">
+    <div class="bottom-nav-inner">
+
+      <button class="bottom-nav-btn active" id="bn-chat" onclick="mobileNav('chat')" aria-label="Chat">
+        <span class="bn-icon">💬</span>
+        <span class="bn-label">Chat</span>
+      </button>
+
+      <button class="bottom-nav-btn" id="bn-clauses" onclick="mobileNav('clauses')" aria-label="JBCC Clauses">
+        <span class="bn-icon">📋</span>
+        <span class="bn-label">Clauses</span>
+      </button>
+
+      <button class="bottom-nav-btn" id="bn-docs" onclick="mobileNav('docs')" aria-label="Checklist">
+        <span class="bn-icon">✅</span>
+        <span class="bn-label">Checklist</span>
+      </button>
+
+      <button class="bottom-nav-btn" id="bn-startup" onclick="mobileNav('startup')" aria-label="Project Start Up">
+        <span class="bn-icon">🚀</span>
+        <span class="bn-label">Start Up</span>
+      </button>
+
+      <button class="bottom-nav-btn" id="bn-menu" onclick="mobileNav('menu')" aria-label="Menu">
+        <span class="bn-icon">☰</span>
+        <span class="bn-label">Menu</span>
+      </button>
+
+      <button class="bottom-nav-btn" id="bn-settings" onclick="mobileNav('settings')" aria-label="Settings">
+        <span class="bn-icon">⚙️</span>
+        <span class="bn-label">Settings</span>
+      </button>
+
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!--  SETTINGS MODAL                                             -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+
+      <div class="modal-head">
+        <div class="modal-title" id="modalTitle">⚙️ Settings</div>
+        <button class="panel-close" onclick="closeSettings()" aria-label="Close settings">✕</button>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="form-group">
+          <label class="form-label" for="apiKeyInput">Anthropic API Key</label>
+          <input type="password" class="form-input" id="apiKeyInput" placeholder="sk-ant-api03-…" autocomplete="off"
+            spellcheck="false">
+          <div class="form-hint">
+            Your key is stored only in your browser's local storage.
+            Get a key at <a href="https://console.anthropic.com" target="_blank"
+              rel="noopener">console.anthropic.com</a>.
+          </div>
+          <div id="apiStatus" class="api-status no-key">● Offline knowledge base mode</div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Mode without API Key</label>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.6;">
+            The assistant uses a built-in <strong style="color:var(--gold)">JBCC knowledge base</strong> with
+            pre-written expert responses for the most common contract topics. Full AI responses (multi-turn
+            conversation, any question) require an API key.
+          </div>
+        </div>
+
+        <div
+          style="margin-top:16px;padding:12px 14px;background:rgba(245,194,0,0.06);border:1px solid var(--border-gold);border-radius:8px;font-size:12px;color:var(--text-secondary);line-height:1.6;">
+          💡 <strong style="color:var(--gold)">CORS Note:</strong> If you open this file directly from your Desktop,
+          your browser may block API calls (CORS restriction). To enable live AI mode, run a local server:<br>
+          <code
+            style="color:var(--gold);font-size:11px;display:block;margin-top:6px;padding:6px 10px;background:rgba(0,0,0,0.3);border-radius:4px;">npx serve "JBCC Chatbot"</code>
+          Then open the URL shown in your browser. The offline knowledge base works fine without a server.
+        </div>
+
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="clearApiKey()">Clear Key</button>
+        <button class="btn btn-ghost" onclick="closeSettings()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!--  SCRIPTS                                                    -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <script src="knowledge.js"></script>
+  <script src="app.js"></script>
+
+  <script>
+    // ─── Set today's date in the chat date pill ─────────────────
+    document.getElementById('chatDatePill').textContent =
+      new Date().toLocaleDateString('en-ZA', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+      });
+
+    // ─── Persist document checklist state ───────────────────────
+    function saveChecklist() {
+      const checks = Array.from(document.querySelectorAll('#docPanel input[type=checkbox]'))
+        .map(cb => cb.checked);
+      localStorage.setItem('vdlv_checklist', JSON.stringify(checks));
+    }
+
+    function loadChecklist() {
+      const saved = localStorage.getItem('vdlv_checklist');
+      if (!saved) return;
+      try {
+        const checks = JSON.parse(saved);
+        const boxes = document.querySelectorAll('#docPanel input[type=checkbox]');
+        checks.forEach((val, i) => { if (boxes[i]) boxes[i].checked = val; });
+      } catch (e) { }
+    }
+
+    // ─── Project Start Up YES/NO state ──────────────────────────
+    const STARTUP_KEY = 'vdlv_startup';
+    let startupState = {};
+    const TOTAL_STARTUP = 48;
+
+    function loadStartup() {
+      try {
+        startupState = JSON.parse(localStorage.getItem(STARTUP_KEY) || '{}');
+      } catch (e) { startupState = {}; }
+      // Apply saved state to buttons
+      Object.keys(startupState).forEach(sid => {
+        applyYN(sid, startupState[sid], false);
+      });
+      updateStartupProgress();
+    }
+
+    function setYN(sid, val) {
+      // Toggle off if already active
+      if (startupState[sid] === val) {
+        delete startupState[sid];
+        applyYN(sid, null, false);
+      } else {
+        startupState[sid] = val;
+        applyYN(sid, val, true);
+      }
+      localStorage.setItem(STARTUP_KEY, JSON.stringify(startupState));
+      updateStartupProgress();
+    }
+
+    function applyYN(sid, val, animate) {
+      const item = document.querySelector(`[data-sid="${sid}"]`);
+      if (!item) return;
+      const yBtn = item.querySelector('.yn-btn.yes');
+      const nBtn = item.querySelector('.yn-btn.no');
+      yBtn.classList.toggle('active', val === 'yes');
+      nBtn.classList.toggle('active', val === 'no');
+      // Dim the whole row if answered
+      item.classList.toggle('answered', val !== null && val !== undefined);
+      item.classList.toggle('answered-yes', val === 'yes');
+      item.classList.toggle('answered-no', val === 'no');
+    }
+
+    function updateStartupProgress() {
+      const done = Object.keys(startupState).length;
+      const pct = Math.round((done / TOTAL_STARTUP) * 100);
+      document.getElementById('startupProgressInner').style.width = pct + '%';
+      document.getElementById('startupProgressLabel').textContent =
+        `${done} of ${TOTAL_STARTUP} complete (${pct}%)`;
+    }
+
+    function resetStartup() {
+      if (!confirm('Reset all Project Start Up items?')) return;
+      startupState = {};
+      localStorage.removeItem(STARTUP_KEY);
+      document.querySelectorAll('#startupPanel .startup-item').forEach(item => {
+        item.querySelectorAll('.yn-btn').forEach(b => b.classList.remove('active'));
+        item.classList.remove('answered', 'answered-yes', 'answered-no');
+      });
+      updateStartupProgress();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadChecklist();
+      loadStartup();
+    });
+  </script>
+
+</body>
+
+</html>
