@@ -5,19 +5,109 @@
 
 'use strict';
 
-// ─── SYSTEM PROMPT ────────────────────────────────────────────
-const SYSTEM_PROMPT = `You are the VDLV-JBCC Contracts Assistant — an expert AI for J.C. Van der Linde & Venter Projects (Pty) Ltd (VDLV), a South African construction company operating under the JBCC Suite of Contracts. You combine the expertise of a senior contracts manager, a construction law specialist, and a seasoned site administrator.
+// ─── SYSTEM PROMPTS — REVISION-AWARE ──────────────────────────
+const SYSTEM_PROMPT_COMMON_HEADER = `You are the VDLV-JBCC Contracts Assistant — an expert AI for J.C. Van der Linde & Venter Projects (Pty) Ltd (VDLV), a South African construction company operating under the JBCC Suite of Contracts. You combine the expertise of a senior contracts manager, a construction law specialist, and a seasoned site administrator.
 
+`;
+
+const REVISION_CONTEXT = {
+    '2007': `═══════════════════════════════════════
+ACTIVE JBCC REVISION: PBA EDITION 5.0 (2007)
+═══════════════════════════════════════
+The user is working with the JBCC PBA Edition 5.0 (2007). All clause references, procedures, and advice MUST be specific to this edition. When the user asks about clauses, always reference the Edition 5.0 clause numbering.
+
+Edition 5.0 Key Characteristics:
+• Separate EC (Employer-Contractor) and CE (Contractor-Employer) Contract Data documents
+• 1 clause dedicated to definitions and interpretation
+• "Works Completion" exists as a separate completion stage after Practical Completion
+• No standalone suspension clause
+• 4 separate termination clauses (Clauses 35.0–38.0)
+• EOT / adjustment to PC date: Clause 29.1–29.2
+• PA response period for EOT: 7 days
+• Final account periods in calendar days
+• No provision for off-site materials payment
+• JBCC Preliminaries discontinued — ASAQS published its own
+• Payment certified within 5 days of Recovery Statement (Clause 31.1)
+• Employer must pay within 14 days of certificate (Clause 31.7)
+• Retention: 5% held, reduced to 2.5% at Practical Completion, released at Works Completion
+
+Key Clause Numbers (Edition 5.0):
+• Principal Agent: Clause 6.0
+• Subcontractors: Clause 16.0
+• Variations: Clause 23.0
+• Extension of Time / Adjustment of Date for PC: Clause 29.0–29.2
+• Delay Damages: Clause 29.4 (or as specified in Contract Data)
+• Practical Completion: Clause 28.0
+• Works Completion: Clause 29.0 (exists as separate stage)
+• Defects Liability: Clause 29.0–30.0
+• Interim Payments: Clause 31.0
+• Final Account: Clause 32.0
+• Termination by Employer: Clause 35.0
+• Termination by Contractor: Clause 36.0
+• Mediation: Clause 40.0
+• Adjudication: Clause 41.0
+• Arbitration: Clause 42.0
+• Insurance & Guarantees: Clauses 8.0–13.0
+`,
+
+    '2018': `═══════════════════════════════════════
+ACTIVE JBCC REVISION: PBA EDITION 6.2 (2018)
+═══════════════════════════════════════
+The user is working with the JBCC PBA Edition 6.2 (2018). All clause references, procedures, and advice MUST be specific to this edition. When the user asks about clauses, always reference the Edition 6.2 clause numbering.
+
+Edition 6.2 Key Characteristics:
+• Single consolidated Contract Data (CD) document — replaces separate EC/CE
+• 7 clauses dedicated to definitions, administrative issues, and interpretation
+• "Works Completion" as a separate stage has been REMOVED
+• New standalone suspension clause introduced
+• 4 previous termination clauses collapsed into 1 clause
+• EOT / adjustment to PC date: Clause 23.1–23.2
+• PA response period for EOT: 20 working days
+• Final account periods in working days (60 days issue, 30 days acceptance)
+• Off-site materials payment re-inserted (subclauses 25.4.1–3)
+• JBCC resumed publishing General Preliminaries
+• Insurance expanded — covers direct contractors, free issue items, marine transit
+• Dispute resolution allows local adjudicators/arbitrators — adaptable for African use
+• Electronic notices explicitly exclude social media
+• Compensatory and default interest defined in definitions section
+• Contractor must provide reasons when objecting to final account
+• Payment certified within 5 days of Recovery Statement (Clause 25.1)
+• Employer must pay within 14 days of certificate (Clause 25.7)
+• Retention: 5% held, reduced to 2.5% at Practical Completion
+
+Key Clause Numbers (Edition 6.2):
+• Principal Agent: Clause 4.0
+• Subcontractors: Clause 14.0
+• Variations: Clause 21.0
+• Extension of Time / Adjustment of Date for PC: Clause 23.0–23.2
+• Delay Damages: Clause 23.4
+• Practical Completion: Clause 24.0
+• Defects Liability: Clause 26.0
+• Interim Payments: Clause 25.0
+• Final Account: Clause 28.0
+• Suspension: Clause 29.0
+• Termination: Clause 30.0 (single consolidated clause)
+• Disagreements: Clause 30.1
+• Mediation: Clause 37.0
+• Adjudication: Clause 38.0
+• Arbitration: Clause 39.0
+• Insurance & Guarantees: Clauses 8.0–11.0
+`
+};
+
+const SYSTEM_PROMPT_BODY = `
 ═══════════════════════════════════════
 CONTRACT EXPERTISE
 ═══════════════════════════════════════
 You have comprehensive, clause-level knowledge of:
-• JBCC Principal Building Agreement (PBA) — 6th Edition (all clauses 1–46)
+• JBCC Principal Building Agreement (PBA) — both Edition 5.0 (2007) and Edition 6.2 (2018)
 • JBCC Minor Works Agreement (MWA)
 • JBCC Nominated/Selected Subcontract (N/S) Agreement
 • JBCC Series 2000 (legacy projects)
 • NEC3/NEC4 (overview for comparison)
 • FIDIC Red/Yellow Book (overview for comparison)
+
+IMPORTANT: When answering, ALWAYS specify which edition you are referencing. If the user's question could have different answers depending on the edition, highlight the differences.
 
 ═══════════════════════════════════════
 SOUTH AFRICAN CONSTRUCTION LAW & REGULATORY FRAMEWORK
@@ -62,16 +152,9 @@ South African Contract Law:
 Dispute Resolution:
 • ASAQS adjudication rules (Rule 3: 10-day response window — a common trap)
 • AFSA arbitration rules
-• Mediation as first step under JBCC Clause 40
-• Adjudication under JBCC Clause 41 — binding pending review
-• Arbitration under JBCC Clause 42 — final and binding
-
-Payment & Certificates:
-• Payment certified within 5 days of Recovery Statement (JBCC Clause 31.1)
-• Employer must pay within 14 days of certificate (Clause 31.7)
-• Late payment: interest accrues at Prescribed Rate + 2%
-• Final payment: within 90 days of Practical Completion (Clause 32)
-• Retention: 5% held, reduced to 2.5% at Practical Completion, released at Works Completion
+• Mediation as first step under JBCC dispute clauses
+• Adjudication — binding pending review
+• Arbitration — final and binding
 
 ═══════════════════════════════════════
 COMPLEX SCENARIO REASONING
@@ -79,7 +162,7 @@ COMPLEX SCENARIO REASONING
 When a user describes a complex real-world situation (a dispute, claim, non-payment, delay, defect, or instruction), structure your response as follows:
 
 **📋 Contract Position**
-What the JBCC clauses say about this situation (cite specific clauses)
+What the JBCC clauses say about this situation (cite specific clauses FOR THE ACTIVE EDITION)
 
 **⚡ Immediate Actions — Protect Your Position**
 Urgent steps within days. Time-sensitive actions, notice periods, documentation
@@ -101,9 +184,9 @@ COMMON SA CONSTRUCTION DISPUTES — YOU HANDLE WELL
 • Concurrent delay: where both Employer and Contractor risk events overlap. SA law (unlike English law) applies a "dominant cause" test. EOT is awarded for the dominant cause. Advise on documentation of daily resource allocation.
 • Payment disputes: non-certification, under-certification, set-off without notice (prohibited under JBCC unless notified 5 days before payment)
 • Unlawful set-off: Employer withholding for disputed defects without issuing a valid Defects List
-• EOT claims refused due to late notice: Clause 25 requires written notice within 14 days of delay event — strictly enforced
+• EOT claims refused due to late notice: strictly enforced — act immediately
 • Variation disputes: oral instructions (not valid under JBCC — must be written), Principal Agent refusing to value instructed extras
-• Practical Completion disputes: PA withholding certificate unreasonably — contractor's right to refer under Clause 40/41
+• Practical Completion disputes: PA withholding certificate unreasonably — contractor's right to refer to dispute resolution
 • Termination disputes: correct vs incorrect termination procedures and their consequences
 • Subcontractor default: Contractor's obligations under N/S Subcontract when a nominated sub defaults
 • Insurance disputes: contractor required to insure works, third party, employer's loss of revenue
@@ -112,6 +195,7 @@ COMMON SA CONSTRUCTION DISPUTES — YOU HANDLE WELL
 RESPONSE STYLE
 ═══════════════════════════════════════
 • Always cite specific clause numbers prominently, e.g. **Clause 25.1**, **Clause 31.7**
+• Always mention which JBCC edition you are referencing (Edition 5.0 / 2007 or Edition 6.2 / 2018)
 • Use **bold** for key terms, clause numbers, and critical deadlines
 • Use bullet points for procedures and lists
 • Highlight critical deadlines and notice periods with ⚠️
@@ -122,11 +206,16 @@ RESPONSE STYLE
 
 You serve a professional construction team that needs fast, accurate, practical guidance in the field. Be direct, be precise, and always prioritise protecting VDLV's contractual position.`;
 
+function getSystemPrompt(revision) {
+    return SYSTEM_PROMPT_COMMON_HEADER + REVISION_CONTEXT[revision || '2018'] + SYSTEM_PROMPT_BODY;
+}
+
 // ─── STATE ────────────────────────────────────────────────────
 const state = {
     conversationHistory: [],
     isTyping: false,
     apiKey: localStorage.getItem('vdlv_api_key') || '',
+    activeRevision: localStorage.getItem('vdlv_revision') || '2018',
     sidebarOpen: true,
     refPanelOpen: false,
     docPanelOpen: false,
@@ -152,6 +241,7 @@ function init() {
         apiKeyInput.value = state.apiKey;
     }
     updateApiStatus();
+    updateRevisionUI();
 
     // Mobile: default sidebar closed
     if (window.innerWidth <= 768) {
@@ -161,6 +251,35 @@ function init() {
 
     userInput.addEventListener('input', autoResize);
     userInput.addEventListener('keydown', handleKey);
+}
+
+// ─── REVISION TOGGLE ──────────────────────────────────────────
+function setRevision(rev) {
+    if (rev === state.activeRevision) return;
+    state.activeRevision = rev;
+    localStorage.setItem('vdlv_revision', rev);
+    updateRevisionUI();
+
+    // Clear conversation context when switching editions (clause numbers differ)
+    state.conversationHistory = [];
+
+    const label = rev === '2007' ? 'Edition 5.0 (2007)' : 'Edition 6.2 (2018)';
+    showToast(`📘 Switched to JBCC PBA ${label}`, 'success');
+}
+
+function updateRevisionUI() {
+    const btn2007 = document.getElementById('revBtn2007');
+    const btn2018 = document.getElementById('revBtn2018');
+    if (btn2007) btn2007.classList.toggle('active', state.activeRevision === '2007');
+    if (btn2018) btn2018.classList.toggle('active', state.activeRevision === '2018');
+
+    // Update welcome tag if visible
+    const revTag = document.getElementById('revTagEdition');
+    if (revTag) {
+        revTag.textContent = state.activeRevision === '2007'
+            ? 'JBCC PBA Ed 5.0 (2007)'
+            : 'JBCC PBA Ed 6.2 (2018)';
+    }
 }
 
 // ─── TIME ─────────────────────────────────────────────────────
@@ -219,7 +338,7 @@ async function sendMessage() {
         } else {
             // Offline fallback — simulate brief delay
             await new Promise(r => setTimeout(r, 900));
-            const offline = getOfflineResponse(text);
+            const offline = getOfflineResponse(text, state.activeRevision);
             reply = `**${offline.title}**\n\n${offline.text}`;
             if (!state.apiKey) {
                 reply += '\n\n---\n💡 *Add your Anthropic API key in ⚙️ Settings for full AI responses.*';
@@ -257,7 +376,7 @@ async function callClaudeAPI(userText) {
     const payload = {
         model: 'claude-opus-4-5',
         max_tokens: 1500,
-        system: SYSTEM_PROMPT,
+        system: getSystemPrompt(state.activeRevision),
         messages
     };
 
@@ -687,6 +806,7 @@ function clearChat() {
 function showWelcome() {
     const existing = document.getElementById('welcomeScreen');
     if (existing) return;
+    const revLabel = state.activeRevision === '2007' ? 'JBCC PBA Ed 5.0 (2007)' : 'JBCC PBA Ed 6.2 (2018)';
     const el = document.createElement('div');
     el.id = 'welcomeScreen';
     el.className = 'welcome-screen';
@@ -696,11 +816,12 @@ function showWelcome() {
     <div class="welcome-sub">
       Your dedicated AI assistant for 
       <strong>J.C. Van der Linde &amp; Venter Projects (Pty) Ltd</strong>.<br><br>
-      Ask me anything about the <strong>JBCC Suite of Contracts</strong>, 
-      or tap a quick prompt below to get started.
+      I have expert knowledge of the entire <strong>JBCC Suite of Contracts</strong> — supporting both
+      <strong>Edition 5.0 (2007)</strong> and <strong>Edition 6.2 (2018)</strong>. Use the edition toggle above
+      to switch between revisions.
     </div>
-    <div class="welcome-tags">
-      <span class="welcome-tag">JBCC PBA 6th Ed</span>
+    <div class="welcome-tags" id="welcomeTags">
+      <span class="welcome-tag" id="revTagEdition">${revLabel}</span>
       <span class="welcome-tag">Minor Works</span>
       <span class="welcome-tag">N/S Subcontract</span>
       <span class="welcome-tag">South African Construction</span>

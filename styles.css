@@ -373,6 +373,53 @@ body {
   border-color: var(--gold);
 }
 
+/* ─── REVISION TOGGLE ───────────────────────────────────────── */
+.rev-toggle {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-full);
+  padding: 2px;
+  flex-shrink: 0;
+  gap: 0;
+}
+
+.rev-btn {
+  padding: 4px 12px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: 'Barlow', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.rev-btn:hover:not(.active) {
+  color: var(--text-secondary);
+  background: rgba(245, 194, 0, 0.06);
+}
+
+.rev-btn.active {
+  background: var(--gold);
+  color: var(--black);
+  box-shadow: 0 2px 8px rgba(245, 194, 0, 0.3);
+}
+
+.rev-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  margin-right: 6px;
+  white-space: nowrap;
+}
+
 /* ─── BRAND STRIP ───────────────────────────────────────────── */
 .brand-strip {
   background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-dark));

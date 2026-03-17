@@ -90,6 +90,13 @@
           <div class="topbar-name">VDLV-JBCC Contracts Assistant</div>
           <div class="topbar-status"><span>●</span> Online &middot; Contracts &amp; Site Management AI</div>
         </div>
+        <div class="rev-toggle" id="revToggle">
+          <span class="rev-label">Edition:</span>
+          <button class="rev-btn" id="revBtn2007" onclick="setRevision('2007')"
+            title="JBCC PBA Edition 5.0 (2007)">2007</button>
+          <button class="rev-btn active" id="revBtn2018" onclick="setRevision('2018')"
+            title="JBCC PBA Edition 6.2 (2018)">2018</button>
+        </div>
         <div class="topbar-actions">
           <button class="topbar-btn" id="btn-clauses" onclick="toggleRefPanel()"
             title="JBCC Clause Reference">📋</button>
@@ -122,12 +129,13 @@
             <div class="welcome-sub">
               Your dedicated AI assistant for <strong>J.C. Van der Linde &amp; Venter Projects (Pty)
                 Ltd</strong>.<br><br>
-              I have expert knowledge of the entire <strong>JBCC Suite of Contracts</strong> — including the PBA 6th
-              Edition, Minor Works Agreement, and N/S Subcontract. Ask me anything about contract administration,
+              I have expert knowledge of the entire <strong>JBCC Suite of Contracts</strong> — supporting both
+              <strong>Edition 5.0 (2007)</strong> and <strong>Edition 6.2 (2018)</strong>. Use the edition toggle above
+              to switch between revisions. Ask me anything about contract administration,
               payments, EOT, disputes, and more.
             </div>
-            <div class="welcome-tags">
-              <span class="welcome-tag">JBCC PBA 6th Ed</span>
+            <div class="welcome-tags" id="welcomeTags">
+              <span class="welcome-tag" id="revTagEdition">JBCC PBA Ed 6.2 (2018)</span>
               <span class="welcome-tag">Minor Works</span>
               <span class="welcome-tag">N/S Subcontract</span>
               <span class="welcome-tag">South African Construction</span>
