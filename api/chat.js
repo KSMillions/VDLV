@@ -53,6 +53,8 @@ module.exports = async function handler(req, res) {
         const data = await anthropicRes.json();
 
         if (!anthropicRes.ok) {
+            const errorMsg = data?.error?.message || JSON.stringify(data) || '';
+
             // Rate limited
             if (anthropicRes.status === 429) {
                 return res.status(429).json({
@@ -61,10 +63,13 @@ module.exports = async function handler(req, res) {
                 });
             }
 
-            // Quota exceeded / billing issue
-            if (anthropicRes.status === 402 || anthropicRes.status === 403) {
-                return res.status(anthropicRes.status).json({
-                    error: 'Usage limit reached. Please try again later.',
+            // Quota / credit / billing issues (Anthropic returns 400 or 402 for these)
+            if (anthropicRes.status === 402 || anthropicRes.status === 403 ||
+                errorMsg.toLowerCase().includes('credit') ||
+                errorMsg.toLowerCase().includes('billing') ||
+                errorMsg.toLowerCase().includes('balance')) {
+                return res.status(402).json({
+                    error: 'Usage credits depleted. Please add credits to the Anthropic account.',
                     errorType: 'quota_exceeded'
                 });
             }
@@ -77,7 +82,11 @@ module.exports = async function handler(req, res) {
                 });
             }
 
-            return res.status(anthropicRes.status).json(data);
+            // Any other API error — always include errorType
+            return res.status(anthropicRes.status).json({
+                error: errorMsg || 'An unexpected error occurred.',
+                errorType: 'api_error'
+            });
         }
 
         return res.status(200).json(data);
