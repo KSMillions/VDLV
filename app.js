@@ -214,7 +214,6 @@ function getSystemPrompt(revision) {
 const state = {
     conversationHistory: [],
     isTyping: false,
-    apiKey: localStorage.getItem('vdlv_api_key') || '',
     activeRevision: localStorage.getItem('vdlv_revision') || '2018',
     sidebarOpen: true,
     refPanelOpen: false,
@@ -231,16 +230,9 @@ const refPanel = document.getElementById('refPanel');
 const docPanel = document.getElementById('docPanel');
 const startupPanel = document.getElementById('startupPanel');
 const settingsModal = document.getElementById('settingsModal');
-const apiKeyInput = document.getElementById('apiKeyInput');
-const apiStatusEl = document.getElementById('apiStatus');
 
 // ─── INIT ─────────────────────────────────────────────────────
 function init() {
-    // Restore API key field
-    if (apiKeyInput && state.apiKey) {
-        apiKeyInput.value = state.apiKey;
-    }
-    updateApiStatus();
     updateRevisionUI();
 
     // Mobile: default sidebar closed
@@ -331,31 +323,29 @@ async function sendMessage() {
     showTyping();
 
     try {
-        let reply;
-
-        if (state.apiKey) {
-            reply = await callClaudeAPI(text);
-        } else {
-            // Offline fallback — simulate brief delay
-            await new Promise(r => setTimeout(r, 900));
-            const offline = getOfflineResponse(text, state.activeRevision);
-            reply = `**${offline.title}**\n\n${offline.text}`;
-            if (!state.apiKey) {
-                reply += '\n\n---\n💡 *Add your Anthropic API key in ⚙️ Settings for full AI responses.*';
-            }
-        }
-
+        // Always try the server proxy first (centralized API key on Vercel)
+        const reply = await callClaudeAPI(text);
         removeTyping();
         appendMessage(reply, 'received');
         state.conversationHistory.push({ role: 'assistant', content: reply });
 
     } catch (err) {
         removeTyping();
-        let errMsg = '⚠️ Connection error. Please check your internet connection and try again.';
-        if (err.message && err.message.includes('401')) {
-            errMsg = '⚠️ Invalid API key. Please check your Anthropic API key in ⚙️ Settings.';
-        } else if (err.message && err.message.includes('CORS')) {
-            errMsg = `⚠️ CORS restriction: Your browser is blocking the API call when running from a local file. **Solutions:**\n\n1. Serve this folder with a simple server:\n   Open Terminal → \`npx serve "JBCC Chatbot"\`\n   Then open the localhost URL shown.\n2. Or use the VS Code Live Server extension.\n\nThe offline knowledge base is still available without an API key!`;
+        const errorType = err.errorType || '';
+        let errMsg;
+
+        if (errorType === 'rate_limit') {
+            errMsg = '⏳ **Usage limit reached** — We\'ve hit the rate limit for now. Please try again in a few minutes.\n\nYour question is still valid — just give the system a moment to reset.';
+        } else if (errorType === 'quota_exceeded') {
+            errMsg = '📊 **Daily usage limit reached** — The AI assistant has reached its daily quota. Please come back later today or tomorrow.\n\nIn the meantime, you can browse the **JBCC Clause Library** (📋) for quick reference.';
+        } else if (errorType === 'overloaded') {
+            errMsg = '🔄 **AI service is temporarily busy** — Please try again in a moment. The service is experiencing high demand.';
+        } else if (errorType === 'offline') {
+            // Server not available — use offline knowledge base
+            const offline = getOfflineResponse(text, state.activeRevision);
+            errMsg = `**${offline.title}**\n\n${offline.text}\n\n---\n💡 *The AI service is currently unavailable. Showing offline knowledge base results.*`;
+        } else {
+            errMsg = '⚠️ **Connection error** — Please check your internet connection and try again.\n\nThe offline clause library is available via the 📋 button above.';
         }
         appendMessage(errMsg, 'received');
     }
@@ -365,8 +355,8 @@ async function sendMessage() {
 }
 
 // ─── CALL CLAUDE API ──────────────────────────────────────────
-// Routes through /api/chat (Vercel serverless proxy) when deployed.
-// Falls back to direct Anthropic call for local dev if a client key is set.
+// Routes through /api/chat (Vercel serverless proxy).
+// Falls back to offline knowledge base if server is unavailable.
 async function callClaudeAPI(userText) {
     const messages = state.conversationHistory.map(m => ({
         role: m.role,
@@ -374,13 +364,12 @@ async function callClaudeAPI(userText) {
     }));
 
     const payload = {
-        model: 'claude-opus-4-5',
-        max_tokens: 1500,
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4096,
         system: getSystemPrompt(state.activeRevision),
         messages
     };
 
-    // ── Try serverless proxy first (/api/chat on Vercel) ──────────
     try {
         const proxyRes = await fetch('/api/chat', {
             method: 'POST',
@@ -388,46 +377,32 @@ async function callClaudeAPI(userText) {
             body: JSON.stringify(payload)
         });
 
-        // If /api/chat returned a real response (deployed on Vercel)
-        if (proxyRes.status !== 404) {
-            if (!proxyRes.ok) {
-                const errData = await proxyRes.json().catch(() => ({}));
-                throw new Error(String(proxyRes.status) + ' ' + (errData.error?.message || JSON.stringify(errData)));
+        // Parse the response
+        const data = await proxyRes.json().catch(() => ({}));
+
+        if (!proxyRes.ok) {
+            // Create an error with the errorType from the server
+            const err = new Error(data.error || `Server error (${proxyRes.status})`);
+            err.errorType = data.errorType || '';
+
+            // If the server says no API key is configured, fall back to offline
+            if (data.errorType === 'no_key') {
+                err.errorType = 'offline';
             }
-            const data = await proxyRes.json();
-            return data.content?.[0]?.text || 'Sorry, no response. Please try again.';
+            throw err;
         }
-        // 404 means we're running from a local file — fall through to direct call
+
+        return data.content?.[0]?.text || 'Sorry, no response received. Please try again.';
+
     } catch (err) {
-        // If it's a network error (file:// with no server), fall through to direct call
-        if (!err.message.includes('404') && !err.message.startsWith('Failed to fetch') && !err.message.startsWith('NetworkError')) {
-            throw err; // Real API error — re-throw
+        // Network error (no server available — local file or offline)
+        if (err.message === 'Failed to fetch' || err.message.startsWith('NetworkError')) {
+            const networkErr = new Error('Server not available');
+            networkErr.errorType = 'offline';
+            throw networkErr;
         }
+        throw err; // Re-throw API errors with their errorType intact
     }
-
-    // ── Local dev fallback: direct browser → Anthropic call ───────
-    if (!state.apiKey) {
-        throw new Error('No API key set. Open ⚙️ Settings and enter your Anthropic API key.');
-    }
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': state.apiKey,
-            'anthropic-version': '2023-06-01',
-            'anthropic-dangerous-allow-browser': 'true'
-        },
-        body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(String(response.status) + ' ' + (errData.error?.message || ''));
-    }
-
-    const data = await response.json();
-    return data.content?.[0]?.text || 'Sorry, I could not process that. Please try again.';
 }
 
 
@@ -655,43 +630,10 @@ function closeStartupPanel() {
 // ─── SETTINGS MODAL ───────────────────────────────────────────
 function openSettings() {
     settingsModal.classList.add('visible');
-    if (apiKeyInput) apiKeyInput.value = state.apiKey;
 }
 
 function closeSettings() {
     settingsModal.classList.remove('visible');
-}
-
-function saveSettings() {
-    const key = apiKeyInput ? apiKeyInput.value.trim() : '';
-    state.apiKey = key;
-    if (key) {
-        localStorage.setItem('vdlv_api_key', key);
-    } else {
-        localStorage.removeItem('vdlv_api_key');
-    }
-    updateApiStatus();
-    closeSettings();
-    showToast(key ? '✓ API key saved — live AI responses enabled!' : 'API key cleared — using offline mode', key ? 'success' : '');
-}
-
-function clearApiKey() {
-    if (apiKeyInput) apiKeyInput.value = '';
-    state.apiKey = '';
-    localStorage.removeItem('vdlv_api_key');
-    updateApiStatus();
-    showToast('API key cleared');
-}
-
-function updateApiStatus() {
-    if (!apiStatusEl) return;
-    if (state.apiKey) {
-        apiStatusEl.className = 'api-status has-key';
-        apiStatusEl.innerHTML = '● Live AI mode active';
-    } else {
-        apiStatusEl.className = 'api-status no-key';
-        apiStatusEl.innerHTML = '● Offline knowledge base mode';
-    }
 }
 
 // Close modal on overlay click

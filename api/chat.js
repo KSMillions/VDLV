@@ -22,8 +22,9 @@ module.exports = async function handler(req, res) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
 
     if (!apiKey) {
-        return res.status(500).json({
-            error: 'ANTHROPIC_API_KEY environment variable not set. Add it in Vercel → Settings → Environment Variables.'
+        return res.status(503).json({
+            error: 'AI service not configured.',
+            errorType: 'no_key'
         });
     }
 
@@ -42,8 +43,8 @@ module.exports = async function handler(req, res) {
                 'anthropic-version': '2023-06-01'
             },
             body: JSON.stringify({
-                model: model || 'claude-opus-4-5',
-                max_tokens: max_tokens || 1500,
+                model: model || 'claude-sonnet-4-20250514',
+                max_tokens: max_tokens || 4096,
                 system: system || '',
                 messages
             })
@@ -52,6 +53,30 @@ module.exports = async function handler(req, res) {
         const data = await anthropicRes.json();
 
         if (!anthropicRes.ok) {
+            // Rate limited
+            if (anthropicRes.status === 429) {
+                return res.status(429).json({
+                    error: 'Rate limit reached. Please try again in a few minutes.',
+                    errorType: 'rate_limit'
+                });
+            }
+
+            // Quota exceeded / billing issue
+            if (anthropicRes.status === 402 || anthropicRes.status === 403) {
+                return res.status(anthropicRes.status).json({
+                    error: 'Usage limit reached. Please try again later.',
+                    errorType: 'quota_exceeded'
+                });
+            }
+
+            // Overloaded
+            if (anthropicRes.status === 529) {
+                return res.status(529).json({
+                    error: 'AI service is temporarily busy. Please try again shortly.',
+                    errorType: 'overloaded'
+                });
+            }
+
             return res.status(anthropicRes.status).json(data);
         }
 
@@ -59,6 +84,9 @@ module.exports = async function handler(req, res) {
 
     } catch (err) {
         console.error('VDLV proxy error:', err);
-        return res.status(500).json({ error: err.message || 'Internal server error' });
+        return res.status(500).json({
+            error: err.message || 'Internal server error',
+            errorType: 'server_error'
+        });
     }
 };
