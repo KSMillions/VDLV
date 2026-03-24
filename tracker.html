@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VDLV | Site Activity Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root { --gold: #C9A84C; --gold-light: #E4C97A; --gold-dim: #7A6330; --black: #0A0A0A; --surface: #111111; --surface2: #1A1A1A; --surface3: #222222; --border: #2A2A2A; --border-gold: rgba(201,168,76,0.3); --text: #F0EDE6; --text-dim: #888880; --text-muted: #555550; --red: #E05252; --green: #52C97A; --blue: #5294E0; --amber: #E0A052; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--black); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 64px; position: sticky; top: 0; z-index: 100; }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-mark { width: 36px; height: 36px; background: var(--gold); display: flex; align-items: center; justify-content: center; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
+  .logo-mark span { font-family: 'Bebas Neue',sans-serif; font-size: 12px; color: var(--black); letter-spacing: 0.04em; }
+  .logo-text { display: flex; flex-direction: column; line-height: 1; }
+  .logo-text strong { font-family: 'Bebas Neue',sans-serif; font-size: 18px; letter-spacing: 0.12em; color: var(--gold); }
+  .logo-text small { font-size: 9px; letter-spacing: 0.18em; color: var(--text-muted); text-transform: uppercase; margin-top: 2px; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .date-badge { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold); background: rgba(201,168,76,0.08); border: 1px solid var(--border-gold); padding: 6px 12px; border-radius: 4px; letter-spacing: 0.05em; }
+  .btn-save { background: var(--gold); color: var(--black); border: none; font-family: 'DM Sans',sans-serif; font-weight: 600; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; padding: 8px 20px; border-radius: 4px; cursor: pointer; transition: background 0.15s; }
+  .btn-save:hover { background: var(--gold-light); }
+  .app { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 64px); }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 24px 0; position: sticky; top: 64px; height: calc(100vh - 64px); overflow-y: auto; }
+  .sidebar-label { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); padding: 0 24px; margin-bottom: 6px; margin-top: 20px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; margin: 0 8px; border-radius: 6px; cursor: pointer; transition: all 0.15s; font-size: 13px; font-weight: 500; color: var(--text-dim); border: 1px solid transparent; }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: rgba(201,168,76,0.1); color: var(--gold); border-color: var(--border-gold); }
+  .nav-item svg { flex-shrink: 0; opacity: 0.8; }
+  .nav-item.active svg { opacity: 1; }
+  .nav-badge { margin-left: auto; background: var(--gold); color: var(--black); font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 10px; }
+  .project-card { margin: 16px; background: linear-gradient(135deg, rgba(201,168,76,0.12), rgba(201,168,76,0.04)); border: 1px solid var(--border-gold); border-radius: 8px; padding: 14px; }
+  .project-card .proj-label { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 4px; }
+  .project-card .proj-name { font-family: 'Bebas Neue',sans-serif; font-size: 16px; letter-spacing: 0.06em; color: var(--gold); line-height: 1.15; margin-bottom: 8px; }
+  .proj-meta span { font-size: 10px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; margin-bottom: 2px; }
+  .main { padding: 32px; overflow-y: auto; }
+  .page { display: none; }
+  .page.active { display: block; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+  .page-header h1 { font-family: 'Bebas Neue',sans-serif; font-size: 36px; letter-spacing: 0.08em; color: var(--text); line-height: 1; }
+  .page-header h1 span { color: var(--gold); }
+  .page-header p { font-size: 13px; color: var(--text-dim); margin-top: 6px; }
+  .cards-row { display: grid; gap: 16px; margin-bottom: 24px; }
+  .cards-row.col4 { grid-template-columns: repeat(4, 1fr); }
+  .cards-row.col3 { grid-template-columns: repeat(3, 1fr); }
+  .cards-row.col2 { grid-template-columns: repeat(2, 1fr); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; transition: border-color 0.2s; }
+  .card:hover { border-color: var(--border-gold); }
+  .card.gold-accent { border-left: 3px solid var(--gold); }
+  .card.red-accent { border-left: 3px solid var(--red); }
+  .card.green-accent { border-left: 3px solid var(--green); }
+  .card.blue-accent { border-left: 3px solid var(--blue); }
+  .stat-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+  .stat-value { font-family: 'Bebas Neue',sans-serif; font-size: 32px; letter-spacing: 0.04em; line-height: 1; color: var(--text); }
+  .stat-value.gold { color: var(--gold); }
+  .stat-value.green { color: var(--green); }
+  .stat-value.red { color: var(--red); }
+  .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .form-section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+  .form-section-header { display: flex; align-items: center; gap: 12px; padding: 16px 20px; background: var(--surface2); border-bottom: 1px solid var(--border); }
+  .form-section-header h3 { font-family: 'Bebas Neue',sans-serif; font-size: 16px; letter-spacing: 0.1em; color: var(--gold); }
+  .section-icon { width: 28px; height: 28px; background: rgba(201,168,76,0.12); border: 1px solid var(--border-gold); border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .form-section-body { padding: 20px; }
+  .form-row { display: grid; gap: 16px; margin-bottom: 16px; }
+  .form-row.col2 { grid-template-columns: 1fr 1fr; }
+  .form-row.col3 { grid-template-columns: 1fr 1fr 1fr; }
+  .form-row.col4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); font-weight: 500; }
+  input, select, textarea { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: 'DM Sans',sans-serif; font-size: 13px; padding: 10px 12px; outline: none; transition: border-color 0.15s; width: 100%; }
+  input:focus, select:focus, textarea:focus { border-color: var(--gold-dim); }
+  select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23888880' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+  textarea { resize: vertical; min-height: 80px; }
+  input[type="number"] { font-family: 'DM Mono', monospace; }
+  .labour-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .labour-table thead tr { border-bottom: 1px solid var(--border-gold); }
+  .labour-table th { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); font-weight: 500; padding: 8px 10px; text-align: left; }
+  .labour-table td { padding: 6px 4px; vertical-align: middle; }
+  .labour-table td input, .labour-table td select { padding: 7px 10px; font-size: 12px; }
+  .labour-total { background: rgba(201,168,76,0.06); border: 1px solid var(--border-gold); border-radius: 6px; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 12px; }
+  .labour-total span:first-child { color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; font-size: 10px; }
+  .labour-total span:last-child { font-family: 'Bebas Neue',sans-serif; font-size: 22px; color: var(--gold); letter-spacing: 0.05em; }
+  .weather-options { display: flex; gap: 10px; flex-wrap: wrap; }
+  .weather-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface2); color: var(--text-dim); font-size: 12px; font-family: 'DM Sans',sans-serif; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+  .weather-btn:hover { border-color: var(--border-gold); color: var(--text); }
+  .weather-btn.selected { background: rgba(201,168,76,0.1); border-color: var(--gold); color: var(--gold); }
+  .activity-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; transition: border-color 0.15s; }
+  .activity-item:hover { border-color: var(--border-gold); }
+  .activity-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .progress-bar-wrapper { height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+  .progress-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--gold-dim), var(--gold)); transition: width 0.3s ease; }
+  .progress-bar-fill.green { background: linear-gradient(90deg, #2d7a4a, var(--green)); }
+  .progress-bar-fill.amber { background: linear-gradient(90deg, #7a4a2d, var(--amber)); }
+  .activity-controls { display: flex; align-items: center; gap: 10px; }
+  .activity-controls input[type="range"] { flex: 1; -webkit-appearance: none; height: 4px; background: var(--surface3); border-radius: 2px; outline: none; border: none; padding: 0; }
+  .activity-controls input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--gold); cursor: pointer; border: 2px solid var(--black); }
+  .activity-controls input[type="number"] { width: 70px; text-align: center; font-family: 'DM Mono',monospace; font-size: 13px; padding: 6px 8px; }
+  .status-tag { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; padding: 3px 8px; border-radius: 3px; }
+  .status-tag.on-track { background: rgba(82,201,122,0.12); color: var(--green); border: 1px solid rgba(82,201,122,0.3); }
+  .status-tag.behind { background: rgba(224,82,82,0.12); color: var(--red); border: 1px solid rgba(224,82,82,0.3); }
+  .status-tag.complete { background: rgba(201,168,76,0.12); color: var(--gold); border: 1px solid var(--border-gold); }
+  .status-tag.not-started { background: var(--surface3); color: var(--text-muted); border: 1px solid var(--border); }
+  .delay-item { background: rgba(224,82,82,0.04); border: 1px solid rgba(224,82,82,0.2); border-radius: 8px; padding: 14px; margin-bottom: 10px; display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr auto; gap: 12px; align-items: start; }
+  .btn-add { display: flex; align-items: center; gap: 6px; background: transparent; border: 1px dashed var(--border); color: var(--text-muted); font-family: 'DM Sans',sans-serif; font-size: 12px; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.15s; width: 100%; justify-content: center; margin-top: 8px; }
+  .btn-add:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .btn-remove { width: 28px; height: 28px; background: rgba(224,82,82,0.1); border: 1px solid rgba(224,82,82,0.2); border-radius: 4px; color: var(--red); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: monospace; }
+  .btn-remove:hover { background: rgba(224,82,82,0.2); }
+  .delay-item .btn-remove { margin-top: 22px; }
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 1px; background: linear-gradient(to bottom, var(--gold), transparent); }
+  .timeline-item { position: relative; margin-bottom: 16px; }
+  .timeline-item::before { content: ''; position: absolute; left: -24px; top: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); border: 2px solid var(--black); box-shadow: 0 0 0 2px var(--border-gold); }
+  .timeline-date { font-family: 'DM Mono',monospace; font-size: 10px; color: var(--gold-dim); margin-bottom: 4px; }
+  .timeline-content { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; font-size: 12px; color: var(--text); }
+  .timeline-content strong { color: var(--gold); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .report-preview { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 20px; font-size: 11px; line-height: 1.8; white-space: pre-wrap; font-family: 'DM Mono',monospace; color: var(--text-dim); max-height: 420px; overflow-y: auto; }
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface); border: 1px solid var(--green); border-radius: 8px; padding: 12px 20px; font-size: 13px; color: var(--green); display: flex; align-items: center; gap: 8px; transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 999; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--surface); }
+  ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .main { padding: 20px 16px; }
+    .cards-row.col4 { grid-template-columns: repeat(2, 1fr); }
+    .cards-row.col3 { grid-template-columns: repeat(2, 1fr); }
+    .form-row.col3, .form-row.col4 { grid-template-columns: 1fr 1fr; }
+    .delay-item { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-mark"><span>VDL</span></div>
+    <div class="logo-text"><strong>VDLV PROJECTS</strong><small>Site Activity Tracker</small></div>
+  </div>
+  <div class="header-right">
+    <div class="date-badge" id="liveDateBadge"></div>
+    <button class="btn-save" onclick="saveDailyLog()">Save Report</button>
+  </div>
+</header>
+<div class="app">
+  <nav class="sidebar">
+    <div class="project-card">
+      <div class="proj-label">Active Project</div>
+      <div class="proj-name" id="sidebarProjectName">Set project<br>name below</div>
+      <div class="proj-meta"><span>📋 JBCC PBA</span><span id="sidebarAgent">👤 Site Agent</span><span id="sidebarWeek">📅 Week —</span></div>
+    </div>
+    <div class="sidebar-label">Daily Log</div>
+    <div class="nav-item active" onclick="showPage('overview', this)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="currentColor"/><rect x="8" y="1" width="5" height="5" rx="1" fill="currentColor"/><rect x="1" y="8" width="5" height="5" rx="1" fill="currentColor"/><rect x="8" y="8" width="5" height="5" rx="1" fill="currentColor"/></svg> Dashboard</div>
+    <div class="nav-item" onclick="showPage('labour', this)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="4" r="2.5" fill="currentColor"/><path d="M2 12c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" stroke-width="1.2" fill="none"/></svg> Labour <span class="nav-badge" id="labourBadge">0</span></div>
+    <div class="nav-item" onclick="showPage('plant', this)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="5" width="12" height="6" rx="1" fill="currentColor" opacity=".3"/><rect x="3" y="3" width="5" height="3" rx="1" fill="currentColor"/><circle cx="4" cy="11" r="1.5" fill="currentColor"/><circle cx="10" cy="11" r="1.5" fill="currentColor"/></svg> Plant & Equipment</div>
+    <div class="nav-item" onclick="showPage('materials', this)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4l5-2.5L12 4v6L7 12.5 2 10V4z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg> Material Deliveries</div>
+    <div class="sidebar-label">Progress</div>
+    <div class="nav-item" onclick="showPage('progress', this)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="9" width="3" height="4" rx="0.5" fill="currentColor"/><rect x="5.5" y="6" width="3" height="7" rx="0.5" fill="currentColor"/><rect x="10" y="2" width="3" height="11" rx="0.5" fill="currentColor"/></svg> Activity Progress</div>
+    <div class="nav-item" onclick="showPage('delays', this)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M7 4v3.5l2 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Delays & Events <span class="nav-badge" id="delayBadge" style="background:var(--red);color:#fff;">0</span></div>
+    <div class="nav-item" onclick="showPage('report', this)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="1" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M4 5h6M4 7.5h6M4 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Generate Report</div>
+    
+    <div class="sidebar-label">Tools</div>
+    <div class="nav-item" onclick="window.location.href='index.html'">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Back to Chatbot
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="page active" id="page-overview">
+      <div class="page-header">
+        <div><h1>DAILY <span>DASHBOARD</span></h1><p id="dashboardDate">Loading...</p></div>
+        <div style="text-align:right;">
+          <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;letter-spacing:0.1em;text-transform:uppercase;">Programme</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold);" id="weekDisplay">—</div>
+        </div>
+      </div>
+      <div class="cards-row col4">
+        <div class="card gold-accent"><div class="stat-label">Total Labour</div><div class="stat-value gold" id="statLabour">0</div><div class="stat-sub">Workers on site</div></div>
+        <div class="card green-accent"><div class="stat-label">Plant Active</div><div class="stat-value green" id="statPlant">0</div><div class="stat-sub">Units operational</div></div>
+        <div class="card blue-accent"><div class="stat-label">Deliveries</div><div class="stat-value" id="statDeliveries">0</div><div class="stat-sub">Loads received</div></div>
+        <div class="card red-accent"><div class="stat-label">Delay Events</div><div class="stat-value red" id="statDelays">0</div><div class="stat-sub">Logged today</div></div>
+      </div>
+      <div class="cards-row col2">
+        <div class="card">
+          <div class="stat-label" style="margin-bottom:14px;">Overall Progress</div>
+          <div style="display:flex;align-items:center;gap:20px;">
+            <div style="position:relative;width:88px;height:88px;flex-shrink:0;">
+              <svg viewBox="0 0 88 88" style="transform:rotate(-90deg);width:88px;height:88px;">
+                <circle cx="44" cy="44" r="36" fill="none" stroke="var(--surface3)" stroke-width="8"/>
+                <circle cx="44" cy="44" r="36" fill="none" stroke="var(--gold)" stroke-width="8" stroke-dasharray="226.2" id="progressCircle" stroke-dashoffset="226.2" stroke-linecap="round" style="transition:stroke-dashoffset 0.5s ease;"/>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);" id="progressCircleLabel">0%</div>
+            </div>
+            <div style="flex:1;font-size:11px;color:var(--text-dim);line-height:2.2;" id="activitySummaryList">No activities yet.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="stat-label" style="margin-bottom:14px;">Activity Feed</div>
+          <div class="timeline" id="recentTimeline"><div class="timeline-item"><div class="timeline-date">Awaiting entries</div><div class="timeline-content"><strong>Tip</strong> Fill in sections to populate this feed.</div></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="stat-label" style="margin-bottom:12px;">Site Conditions</div>
+        <div style="display:flex;gap:32px;flex-wrap:wrap;">
+          <div><div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;">Weather AM / PM</div><div style="font-size:13px;" id="dashWeather">—</div></div>
+          <div><div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;">Work Status</div><div style="font-size:13px;color:var(--green);" id="dashWorkable">—</div></div>
+          <div><div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;">Rainfall</div><div style="font-size:13px;font-family:'DM Mono',monospace;" id="dashRainfall">— mm</div></div>
+          <div><div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;">Site Agent</div><div style="font-size:13px;" id="dashAgent">—</div></div>
+        </div>
+      </div>
+    </div>
+    <!-- LABOUR -->
+    <div class="page" id="page-labour">
+      <div class="page-header"><div><h1>LABOUR <span>LOG</span></h1><p>Daily headcount by trade · JBCC-compliant record</p></div></div>
+      <div class="form-section">
+        <div class="form-section-header"><div class="section-icon">🏗️</div><h3>Site Information</h3></div>
+        <div class="form-section-body">
+          <div class="form-row col3">
+            <div class="form-group"><label>Project Name</label><input type="text" id="projectName" placeholder="e.g. SARB HQ Phase 2" oninput="updateSidebar()"/></div>
+            <div class="form-group"><label>Site Agent / Foreman</label><input type="text" id="siteAgent" placeholder="Full name" oninput="updateSidebar()"/></div>
+            <div class="form-group"><label>Date</label><input type="date" id="logDate" onchange="updateSidebar()"/></div>
+          </div>
+          <div class="form-row col3">
+            <div class="form-group"><label>Contract No.</label><input type="text" id="contractNo" placeholder="e.g. VDLV-2024-017"/></div>
+            <div class="form-group"><label>Employer</label><input type="text" id="employer" placeholder="e.g. SARB / City of Tshwane"/></div>
+            <div class="form-group"><label>Contract Form</label>
+              <select><option>JBCC PBA 6.2</option><option>JBCC Minor Works</option><option>GCC 2015</option><option>NEC4</option></select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-header"><div class="section-icon">👷</div><h3>Trade Headcount</h3></div>
+        <div class="form-section-body">
+          <table class="labour-table">
+            <thead><tr><th>Trade / Discipline</th><th>Contractor / Employer</th><th style="width:80px;">Count</th><th style="width:110px;">Hours Worked</th><th style="width:100px;">Status</th><th style="width:36px;"></th></tr></thead>
+            <tbody id="labourBody"></tbody>
+          </table>
+          <button class="btn-add" onclick="addLabourRow()">+ Add Trade</button>
+          <div class="labour-total"><span>Total Headcount on Site</span><span id="totalLabour">0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PLANT -->
+    <div class="page" id="page-plant">
+      <div class="page-header"><div><h1>PLANT & <span>EQUIPMENT</span></h1><p>On-site plant register · daily status & utilisation</p></div></div>
+      <div class="form-section">
+        <div class="form-section-header"><div class="section-icon">🚜</div><h3>Plant Register</h3></div>
+        <div class="form-section-body">
+          <table class="labour-table">
+            <thead><tr><th>Plant / Equipment</th><th>Reg / ID No.</th><th>Operator</th><th style="width:100px;">Hours Used</th><th style="width:120px;">Status</th><th style="width:36px;"></th></tr></thead>
+            <tbody id="plantBody"></tbody>
+          </table>
+          <button class="btn-add" onclick="addPlantRow()">+ Add Plant</button>
+          <div style="margin-top:14px;display:flex;gap:20px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;box-shadow:0 0 6px rgba(82,201,122,0.5);"></span>Operational</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);"><span style="width:8px;height:8px;border-radius:50%;background:var(--amber);display:inline-block;"></span>Idle / Standby</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);"><span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;box-shadow:0 0 6px rgba(224,82,82,0.5);"></span>Breakdown</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);"><span style="width:8px;height:8px;border-radius:50%;background:var(--text-muted);display:inline-block;"></span>Off-hire</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MATERIALS -->
+    <div class="page" id="page-materials">
+      <div class="page-header"><div><h1>MATERIAL <span>DELIVERIES</span></h1><p>Delivery docket register · quantities & supplier details</p></div></div>
+      <div class="form-section">
+        <div class="form-section-header"><div class="section-icon">📦</div><h3>Delivery Register</h3></div>
+        <div class="form-section-body">
+          <table class="labour-table">
+            <thead><tr><th>Material Description</th><th>Supplier</th><th style="width:100px;">Docket No.</th><th style="width:80px;">Qty</th><th style="width:75px;">Unit</th><th style="width:85px;">Time</th><th style="width:36px;"></th></tr></thead>
+            <tbody id="materialsBody"></tbody>
+          </table>
+          <button class="btn-add" onclick="addMaterialRow()">+ Add Delivery</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="page" id="page-progress">
+      <div class="page-header"><div><h1>ACTIVITY <span>PROGRESS</span></h1><p>% complete per programme activity · updated daily</p></div></div>
+      <div class="form-section">
+        <div class="form-section-header"><div class="section-icon">📊</div><h3>Programme Activities</h3></div>
+        <div class="form-section-body">
+          <div id="activitiesContainer"></div>
+          <button class="btn-add" onclick="addActivity()">+ Add Activity</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DELAYS -->
+    <div class="page" id="page-delays">
+      <div class="page-header"><div><h1>DELAYS & <span>EVENTS</span></h1><p>JBCC clause 25 · delay event register for EOT claims</p></div></div>
+      <div class="form-section">
+        <div class="form-section-header"><div class="section-icon">🌦️</div><h3>Weather Conditions</h3></div>
+        <div class="form-section-body">
+          <div class="form-row col2" style="margin-bottom:16px;">
+            <div class="form-group"><label>AM Conditions</label>
+              <div class="weather-options" id="weatherAM">
+                <button class="weather-btn" onclick="selectWeather(this,'AM')">☀️ Clear</button>
+                <button class="weather-btn" onclick="selectWeather(this,'AM')">⛅ Overcast</button>
+                <button class="weather-btn" onclick="selectWeather(this,'AM')">🌧️ Rain</button>
+                <button class="weather-btn" onclick="selectWeather(this,'AM')">⛈️ Storm</button>
+                <button class="weather-btn" onclick="selectWeather(this,'AM')">🌬️ High Wind</button>
+              </div>
+            </div>
+            <div class="form-group"><label>PM Conditions</label>
+              <div class="weather-options" id="weatherPM">
+                <button class="weather-btn" onclick="selectWeather(this,'PM')">☀️ Clear</button>
+                <button class="weather-btn" onclick="selectWeather(this,'PM')">⛅ Overcast</button>
+                <button class="weather-btn" onclick="selectWeather(this,'PM')">🌧️ Rain</button>
+                <button class="weather-btn" onclick="selectWeather(this,'PM')">⛈️ Storm</button>
+                <button class="weather-btn" onclick="selectWeather(this,'PM')">🌬️ High Wind</button>
+              </div>
+            </div>
+          </div>
+          <div class="form-row col3">
+            <div class="form-group"><label>Work Status Today</label><select id="workPossible" onchange="updateDash()"><option value="">Select</option><option>Full day</option><option>Half day — AM only</option><option>Half day — PM only</option><option>No work — weather</option><option>No work — other</option></select></div>
+            <div class="form-group"><label>Rainfall (mm)</label><input type="number" id="rainfall" placeholder="0" min="0" step="0.1" oninput="updateDash()"/></div>
+            <div class="form-group"><label>Temperature (°C)</label><input type="number" id="temperature" placeholder="e.g. 28" min="-10" max="55"/></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-header"><div class="section-icon">⏱️</div><h3>Delay Events Register</h3></div>
+        <div class="form-section-body">
+          <div id="delayContainer"></div>
+          <button class="btn-add" onclick="addDelay()">+ Log Delay Event</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORT -->
+    <div class="page" id="page-report">
+      <div class="page-header"><div><h1>DAILY SITE <span>REPORT</span></h1><p>Auto-generated from today's entries · ready to distribute</p></div></div>
+      <div class="cards-row col3" style="margin-bottom:24px;">
+        <div class="card" style="cursor:pointer;text-align:center;" onclick="generateReport()">
+          <div style="font-size:28px;margin-bottom:8px;">📄</div><div style="font-size:12px;font-weight:600;color:var(--gold);">Generate Report</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Compile today's log</div>
+        </div>
+        <div class="card" style="cursor:pointer;text-align:center;" onclick="copyReport()">
+          <div style="font-size:28px;margin-bottom:8px;">📋</div><div style="font-size:12px;font-weight:600;color:var(--text);">Copy to Clipboard</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Paste into email / WhatsApp</div>
+        </div>
+        <div class="card" style="cursor:pointer;text-align:center;" onclick="clearAll()">
+          <div style="font-size:28px;margin-bottom:8px;">🔄</div><div style="font-size:12px;font-weight:600;color:var(--text);">Reset for New Day</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Clear all entries</div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-header"><div class="section-icon">📑</div><h3>Report Preview</h3></div>
+        <div class="form-section-body"><div class="report-preview" id="reportPreview">Click "Generate Report" to compile today's entries into a structured daily site report.</div></div>
+      </div>
+    </div>
+  </main>
+</div>
+<div class="toast" id="toast"><span>✓</span><span id="toastMsg">Saved</span></div>
+
+<script>
+const weatherState = { AM: '', PM: '' };
+const timelineState = {};
+
+document.addEventListener('DOMContentLoaded', () => {
+  const today = new Date();
+  document.getElementById('logDate').value = today.toISOString().split('T')[0];
+  document.getElementById('liveDateBadge').textContent = today.toLocaleDateString('en-ZA',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase();
+  document.getElementById('dashboardDate').textContent = today.toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const weekNum = getWeekNumber(today);
+  document.getElementById('weekDisplay').textContent = 'W' + weekNum;
+  document.getElementById('sidebarWeek').textContent = '📅 Week ' + weekNum;
+  ['Concrete Gang', 'Steel Fixers', 'Bricklayers', 'General Workers'].forEach(t => addLabourRow(t));
+  [{ name:'Tower Crane', id:'TC-01' }, { name:'Concrete Pump', id:'CP-01' }, { name:'TLB / Excavator', id:'TLB-02' }].forEach(p => addPlantRow(p));
+  [{ name:'Reinforced Concrete Structure — Columns', code:'2110' }, { name:'Formwork & Shuttering', code:'2200' }, { name:'Brickwork — External Envelope', code:'3100' }, { name:'Roof Structure', code:'5100' }, { name:'Waterproofing — Basement', code:'4210' }].forEach(a => addActivity(a));
+});
+
+function getWeekNumber(d) { const onejan = new Date(d.getFullYear(), 0, 1); return Math.ceil((((d - onejan) / 86400000) + onejan.getDay() + 1) / 7); }
+function showPage(id, el) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.getElementById('page-' + id).classList.add('active'); if (el) el.classList.add('active'); }
+
+let lc = 0;
+function addLabourRow(tradeName = '') {
+  const id = ++lc; const tr = document.createElement('tr'); tr.id = 'lr-' + id;
+  tr.innerHTML = `<td><input type="text" placeholder="Trade / discipline" value="${tradeName}" oninput="recalcLabour()"/></td><td><input type="text" placeholder="Own / Subcontractor name"/></td><td><input type="number" min="0" value="0" class="lcount" oninput="recalcLabour()" style="width:70px;"/></td><td><input type="number" min="0" max="24" value="9" step="0.5" style="width:80px;"/></td><td><select><option>Present</option><option>Absent</option><option>Overtime</option><option>Partial</option></select></td><td><button class="btn-remove" onclick="removeEl('lr-${id}');recalcLabour()">×</button></td>`;
+  document.getElementById('labourBody').appendChild(tr); recalcLabour();
+}
+function recalcLabour() { let total = 0; document.querySelectorAll('.lcount').forEach(c => total += parseInt(c.value)||0); document.getElementById('totalLabour').textContent = total; document.getElementById('statLabour').textContent = total; document.getElementById('labourBadge').textContent = total; pushTimeline('labour', total + ' workers on site'); }
+
+let pc = 0;
+function addPlantRow(preset = {}) {
+  const id = ++pc; const tr = document.createElement('tr'); tr.id = 'pr-' + id;
+  tr.innerHTML = `<td><input type="text" placeholder="e.g. Tower Crane" value="${preset.name||''}"/></td><td><input type="text" placeholder="Reg / ID" value="${preset.id||''}"/></td><td><input type="text" placeholder="Operator name"/></td><td><input type="number" min="0" max="24" value="9" step="0.5" style="width:80px;" oninput="recalcPlant()"/></td><td><select class="pstatus" onchange="recalcPlant()"><option value="operational">Operational</option><option value="idle">Idle</option><option value="breakdown">Breakdown</option><option value="offhire">Off-hire</option></select></td><td><button class="btn-remove" onclick="removeEl('pr-${id}');recalcPlant()">×</button></td>`;
+  document.getElementById('plantBody').appendChild(tr); recalcPlant();
+}
+function recalcPlant() { let active = 0; document.querySelectorAll('.pstatus').forEach(s => { if (s.value==='operational') active++; }); document.getElementById('statPlant').textContent = active; pushTimeline('plant', active + ' plant units operational'); }
+
+let mc = 0;
+function addMaterialRow() {
+  const id = ++mc; const tr = document.createElement('tr'); tr.id = 'mr-' + id;
+  tr.innerHTML = `<td><input type="text" placeholder="e.g. Ready-mix concrete 30MPa"/></td><td><input type="text" placeholder="Supplier name"/></td><td><input type="text" placeholder="Docket #"/></td><td><input type="number" min="0" step="0.1" placeholder="0" oninput="recalcMat()"/></td><td><select><option>m³</option><option>ton</option><option>m²</option><option>m</option><option>nr</option><option>l</option><option>kg</option></select></td><td><input type="time"/></td><td><button class="btn-remove" onclick="removeEl('mr-${id}');recalcMat()">×</button></td>`;
+  document.getElementById('materialsBody').appendChild(tr); recalcMat();
+}
+function recalcMat() { const n = document.querySelectorAll('#materialsBody tr').length; document.getElementById('statDeliveries').textContent = n; pushTimeline('materials', n + ' deliveries received'); }
+
+let ac = 0;
+function addActivity(preset = {}) {
+  const id = ++ac; const pct = preset.planned || 0; const div = document.createElement('div'); div.className = 'activity-item'; div.id = 'act-' + id;
+  div.innerHTML = `<div class="activity-header"><div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;"><input type="text" placeholder="Activity name" value="${preset.name||''}" style="flex:1;min-width:0;" oninput="updateActivitySummary()"/><input type="text" placeholder="Code" value="${preset.code||''}" style="width:72px;font-family:'DM Mono',monospace;font-size:11px;" title="Cost / programme code"/></div><div style="display:flex;align-items:center;gap:8px;margin-left:12px;"><span class="status-tag not-started" id="atag-${id}">Not Started</span><button class="btn-remove" onclick="removeEl('act-${id}');updateActivitySummary()">×</button></div></div><div class="progress-bar-wrapper"><div class="progress-bar-fill" id="abar-${id}" style="width:${pct}%"></div></div><div class="activity-controls"><input type="range" min="0" max="100" value="${pct}" id="arange-${id}" oninput="syncAct(${id})"/><input type="number" min="0" max="100" value="${pct}" id="anum-${id}" oninput="syncActNum(${id})"/><span style="font-size:11px;color:var(--text-muted);">%</span></div><div style="margin-top:8px;"><input type="text" placeholder="Notes (delays, issues, next steps...)" style="font-size:11px;color:var(--text-dim);"/></div>`;
+  document.getElementById('activitiesContainer').appendChild(div); syncAct(id);
+}
+function syncAct(id) { const val = parseInt(document.getElementById('arange-'+id).value)||0; document.getElementById('anum-'+id).value = val; const bar = document.getElementById('abar-'+id); bar.style.width = val + '%'; bar.className = 'progress-bar-fill' + (val===100?' green':val>0&&val<40?' amber':''); const tag = document.getElementById('atag-'+id); if (val===0) { tag.textContent='Not Started'; tag.className='status-tag not-started'; } else if (val===100) { tag.textContent='Complete'; tag.className='status-tag complete'; } else { tag.textContent='In Progress'; tag.className='status-tag on-track'; } updateActivitySummary(); }
+function syncActNum(id) { const val = Math.min(100, Math.max(0, parseInt(document.getElementById('anum-'+id).value)||0)); document.getElementById('arange-'+id).value = val; syncAct(id); }
+function updateActivitySummary() { const ranges = document.querySelectorAll('[id^="arange-"]'); let total = 0; let html = ''; ranges.forEach(r => { const pct = parseInt(r.value)||0; total += pct; const aid = r.id.replace('arange-',''); const nameEl = document.querySelector('#act-'+aid+' input[type="text"]'); const name = nameEl ? (nameEl.value.substring(0,30)||'Activity') : 'Activity'; const col = pct===100?'var(--green)':pct>0?'var(--gold)':'var(--text-muted)'; html += `<div style="color:${col};">${name} — ${pct}%</div>`; }); const avg = ranges.length ? Math.round(total / ranges.length) : 0; const circ = 226.2; document.getElementById('progressCircle').style.strokeDashoffset = circ - (circ * avg / 100); document.getElementById('progressCircleLabel').textContent = avg + '%'; document.getElementById('activitySummaryList').innerHTML = html || 'No activities.'; pushTimeline('progress', 'Overall progress: ' + avg + '%'); }
+
+let dc = 0;
+function addDelay() {
+  const id = ++dc; const div = document.createElement('div'); div.className = 'delay-item'; div.id = 'del-' + id;
+  div.innerHTML = `<div class="form-group"><label>Delay Category</label><select onchange="recalcDelays()"><option value="">Select type</option><option>Employer Risk — Drawing Issue (Cl. 25.1)</option><option>Employer Risk — Late Instructions (Cl. 25.2)</option><option>Force Majeure — Weather (Cl. 25.6)</option><option>Nominated Subcontractor (Cl. 25.7)</option><option>Access / Obstruction</option><option>Utility / Services Strike</option><option>Material Non-delivery</option><option>Contractor Risk</option><option>Other</option></select></div><div class="form-group"><label>Duration (hrs)</label><input type="number" min="0" max="24" step="0.5" placeholder="0" oninput="recalcDelays()"/></div><div class="form-group"><label>JBCC Clause</label><input type="text" placeholder="e.g. 25.2.1"/></div><div class="form-group"><label>Description</label><input type="text" placeholder="Brief description of delay event"/></div><button class="btn-remove" onclick="removeEl('del-${id}');recalcDelays()">×</button>`;
+  document.getElementById('delayContainer').appendChild(div); recalcDelays();
+}
+function recalcDelays() { const n = document.querySelectorAll('[id^="del-"]').length; document.getElementById('statDelays').textContent = n; document.getElementById('delayBadge').textContent = n; if (n > 0) pushTimeline('delays', n + ' delay event(s) logged'); }
+
+function selectWeather(btn, period) { btn.closest('.weather-options').querySelectorAll('.weather-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); weatherState[period] = btn.textContent.trim(); document.getElementById('dashWeather').textContent = (weatherState.AM||'—') + ' / ' + (weatherState.PM||'—'); }
+function updateSidebar() { const proj = document.getElementById('projectName').value; const agent = document.getElementById('siteAgent').value; if (proj) document.getElementById('sidebarProjectName').textContent = proj; if (agent) { document.getElementById('sidebarAgent').textContent = '👤 ' + agent; document.getElementById('dashAgent').textContent = agent; } }
+function updateDash() { const w = document.getElementById('workPossible').value; const r = document.getElementById('rainfall').value; if (w) document.getElementById('dashWorkable').textContent = w; document.getElementById('dashRainfall').textContent = (r||'0') + ' mm'; }
+function pushTimeline(key, text) { timelineState[key] = text; const now = new Date().toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'}); const container = document.getElementById('recentTimeline'); container.innerHTML = Object.entries(timelineState).map(([k,v]) => `<div class="timeline-item"><div class="timeline-date">${now}</div><div class="timeline-content"><strong>${k}</strong> ${v}</div></div>`).join(''); }
+function removeEl(id) { const el = document.getElementById(id); if (el) el.remove(); }
+
+function generateReport() {
+  const date = document.getElementById('logDate').value || '—'; const proj = document.getElementById('projectName').value || 'PROJECT NAME'; const agent = document.getElementById('siteAgent').value || '—'; const contract = document.getElementById('contractNo').value || '—'; const employer = document.getElementById('employer').value || '—'; const labour = document.getElementById('totalLabour').textContent; const plant = document.getElementById('statPlant').textContent; const deliveries = document.getElementById('statDeliveries').textContent; const delays = document.getElementById('statDelays').textContent; const wAM = weatherState.AM || 'Not recorded'; const wPM = weatherState.PM || 'Not recorded'; const workable = document.getElementById('workPossible').value || 'Not recorded'; const rain = document.getElementById('rainfall').value || '0'; const temp = document.getElementById('temperature').value || '—';
+  let actText = ''; document.querySelectorAll('[id^="arange-"]').forEach(r => { const aid = r.id.replace('arange-',''); const nameEl = document.querySelector('#act-'+aid+' input[type="text"]'); const name = nameEl ? nameEl.value || 'Activity' : 'Activity'; actText += `    • ${name.padEnd(45,'.')} ${r.value}%\n`; });
+  let delayText = ''; document.querySelectorAll('[id^="del-"]').forEach(d => { const inputs = d.querySelectorAll('input,select'); const cat = inputs[0]?.value || '—'; const hrs = inputs[1]?.value || '—'; const clause = inputs[2]?.value || '—'; const desc = inputs[3]?.value || '—'; delayText += `    • [${clause}] ${cat} | ${hrs}hrs | ${desc}\n`; });
+  const r = `══════════════════════════════════════════════════════════
+  JC VAN DER LINDE & VENTER PROJECTS (PTY) LTD
+  DAILY SITE REPORT
+══════════════════════════════════════════════════════════
+  Project      : ${proj.toUpperCase()}
+  Date         : ${date}
+  Contract No. : ${contract}
+  Employer     : ${employer}
+  Site Agent   : ${agent.toUpperCase()}
+  Contract     : JBCC PBA 6.2
+
+──────────────────────────────────────────────────────────
+  WEATHER & SITE CONDITIONS
+──────────────────────────────────────────────────────────
+  AM Weather   : ${wAM}
+  PM Weather   : ${wPM}
+  Rainfall     : ${rain} mm
+  Temperature  : ${temp} °C
+  Work Status  : ${workable}
+
+──────────────────────────────────────────────────────────
+  RESOURCE SUMMARY
+──────────────────────────────────────────────────────────
+  Labour Headcount    : ${labour} workers
+  Plant Operational   : ${plant} unit(s)
+  Material Deliveries : ${deliveries} load(s)
+
+──────────────────────────────────────────────────────────
+  PROGRAMME PROGRESS (% COMPLETE)
+──────────────────────────────────────────────────────────
+${actText || '    No activities recorded.\n'}──────────────────────────────────────────────────────────
+  DELAY EVENTS  [${delays} logged]
+──────────────────────────────────────────────────────────
+${delays === '0' ? '    No delay events recorded today.\n' : delayText}──────────────────────────────────────────────────────────
+  DECLARATION
+──────────────────────────────────────────────────────────
+  I confirm the above information is accurate.
+
+  Signed : _______________________________
+  Name   : ${agent.toUpperCase()}
+  Date   : ${date}
+
+══════════════════════════════════════════════════════════
+  Generated · VDLV Site Tracker · vdlv.vercel.app
+══════════════════════════════════════════════════════════`.trim();
+  document.getElementById('reportPreview').textContent = r; showToast('Report generated — ready to copy');
+}
+
+function copyReport() { const t = document.getElementById('reportPreview').textContent; if (t.startsWith('Click')) { showToast('Generate the report first'); return; } navigator.clipboard.writeText(t).then(() => showToast('Copied to clipboard ✓')); }
+function saveDailyLog() { showToast('Daily log saved'); }
+function clearAll() { if (!confirm('Clear all entries and reset for a new day?')) return; ['labourBody','plantBody','materialsBody'].forEach(id => document.getElementById(id).innerHTML = ''); document.getElementById('activitiesContainer').innerHTML = ''; document.getElementById('delayContainer').innerHTML = ''; document.getElementById('reportPreview').textContent = 'Click "Generate Report" to compile today\'s entries.'; lc=pc=mc=ac=dc=0; Object.keys(timelineState).forEach(k => delete timelineState[k]); recalcLabour(); recalcPlant(); recalcMat(); recalcDelays(); updateActivitySummary(); showToast('Reset — ready for new day'); }
+function showToast(msg, dur=3000) { const t = document.getElementById('toast'); document.getElementById('toastMsg').textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), dur); }
+</script>
+</body>
+</html>
