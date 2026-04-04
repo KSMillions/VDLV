@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>VDLV | Site Activity Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/pdf-lib/dist/pdf-lib.js"></script>
 <style>
   :root { --gold: #C9A84C; --gold-light: #E4C97A; --gold-dim: #7A6330; --black: #0A0A0A; --surface: #111111; --surface2: #1A1A1A; --surface3: #222222; --border: #2A2A2A; --border-gold: rgba(201,168,76,0.3); --text: #F0EDE6; --text-dim: #888880; --text-muted: #555550; --red: #E05252; --green: #52C97A; --blue: #5294E0; --amber: #E0A052; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -88,14 +89,6 @@
   .activity-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; transition: border-color 0.15s; }
   .activity-item:hover { border-color: var(--border-gold); }
   .activity-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-  .progress-bar-wrapper { height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
-  .progress-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--gold-dim), var(--gold)); transition: width 0.3s ease; }
-  .progress-bar-fill.green { background: linear-gradient(90deg, #2d7a4a, var(--green)); }
-  .progress-bar-fill.amber { background: linear-gradient(90deg, #7a4a2d, var(--amber)); }
-  .activity-controls { display: flex; align-items: center; gap: 10px; }
-  .activity-controls input[type="range"] { flex: 1; -webkit-appearance: none; height: 4px; background: var(--surface3); border-radius: 2px; outline: none; border: none; padding: 0; }
-  .activity-controls input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--gold); cursor: pointer; border: 2px solid var(--black); }
-  .activity-controls input[type="number"] { width: 70px; text-align: center; font-family: 'DM Mono',monospace; font-size: 13px; padding: 6px 8px; }
   .status-tag { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; padding: 3px 8px; border-radius: 3px; }
   .status-tag.on-track { background: rgba(82,201,122,0.12); color: var(--green); border: 1px solid rgba(82,201,122,0.3); }
   .status-tag.behind { background: rgba(224,82,82,0.12); color: var(--red); border: 1px solid rgba(224,82,82,0.3); }
@@ -152,8 +145,10 @@
     </div>
     <div class="sidebar-label">Daily Log</div>
     <div class="nav-item active" onclick="showPage('overview', this)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="currentColor"/><rect x="8" y="1" width="5" height="5" rx="1" fill="currentColor"/><rect x="1" y="8" width="5" height="5" rx="1" fill="currentColor"/><rect x="8" y="8" width="5" height="5" rx="1" fill="currentColor"/></svg> Dashboard</div>
+    <div class="nav-item" onclick="showPage('siteinfo', this)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1L1 4v8h12V4L7 1zM3 12v-4h8v4" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg> Site Information</div>
     <div class="nav-item" onclick="showPage('labour', this)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="4" r="2.5" fill="currentColor"/><path d="M2 12c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" stroke-width="1.2" fill="none"/></svg> Labour <span class="nav-badge" id="labourBadge">0</span></div>
     <div class="nav-item" onclick="showPage('plant', this)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="5" width="12" height="6" rx="1" fill="currentColor" opacity=".3"/><rect x="3" y="3" width="5" height="3" rx="1" fill="currentColor"/><circle cx="4" cy="11" r="1.5" fill="currentColor"/><circle cx="10" cy="11" r="1.5" fill="currentColor"/></svg> Plant & Equipment</div>
+    <div class="nav-item" id="navToolHire" onclick="showPage('toolhire', this)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9.5 2a1.5 1.5 0 0 1 1.5 1.5V6a2 2 0 0 1-2 2H5" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M4 11l-2 2M2.5 10L1 11.5M7 8l-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Tool Hire <span class="nav-badge" id="toolHireBadge" style="display:none;background:var(--red);color:#fff;">!</span></div>
     <div class="nav-item" onclick="showPage('materials', this)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4l5-2.5L12 4v6L7 12.5 2 10V4z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg> Material Deliveries</div>
     <div class="sidebar-label">Progress</div>
     <div class="nav-item" onclick="showPage('progress', this)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="9" width="3" height="4" rx="0.5" fill="currentColor"/><rect x="5.5" y="6" width="3" height="7" rx="0.5" fill="currentColor"/><rect x="10" y="2" width="3" height="11" rx="0.5" fill="currentColor"/></svg> Activity Progress</div>
@@ -182,18 +177,16 @@
         <div class="card blue-accent"><div class="stat-label">Deliveries</div><div class="stat-value" id="statDeliveries">0</div><div class="stat-sub">Loads received</div></div>
         <div class="card red-accent"><div class="stat-label">Delay Events</div><div class="stat-value red" id="statDelays">0</div><div class="stat-sub">Logged today</div></div>
       </div>
+      <div class="card" id="hireAlertCard" style="display:none; cursor:pointer; margin-bottom:24px; border-left: 3px solid var(--amber);" onclick="showPage('toolhire', document.getElementById('navToolHire'))">
+        <div class="stat-label">Tool Hire Alert</div>
+        <div class="stat-value amber" id="statToolsNearing" style="font-size:18px;">0</div>
+        <div class="stat-sub">Items nearing or past expected off-hire date. Click to review.</div>
+      </div>
       <div class="cards-row col2">
         <div class="card">
-          <div class="stat-label" style="margin-bottom:14px;">Overall Progress</div>
-          <div style="display:flex;align-items:center;gap:20px;">
-            <div style="position:relative;width:88px;height:88px;flex-shrink:0;">
-              <svg viewBox="0 0 88 88" style="transform:rotate(-90deg);width:88px;height:88px;">
-                <circle cx="44" cy="44" r="36" fill="none" stroke="var(--surface3)" stroke-width="8"/>
-                <circle cx="44" cy="44" r="36" fill="none" stroke="var(--gold)" stroke-width="8" stroke-dasharray="226.2" id="progressCircle" stroke-dashoffset="226.2" stroke-linecap="round" style="transition:stroke-dashoffset 0.5s ease;"/>
-              </svg>
-              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);" id="progressCircleLabel">0%</div>
-            </div>
-            <div style="flex:1;font-size:11px;color:var(--text-dim);line-height:2.2;" id="activitySummaryList">No activities yet.</div>
+          <div class="stat-label" style="margin-bottom:14px;">Daily Activities</div>
+          <div style="display:flex;align-items:flex-start;gap:20px;">
+            <div style="flex:1;font-size:12px;color:var(--text-dim);line-height:1.6;" id="activitySummaryList">No activities recorded today.</div>
           </div>
         </div>
         <div class="card">
@@ -211,11 +204,12 @@
         </div>
       </div>
     </div>
-    <!-- LABOUR -->
-    <div class="page" id="page-labour">
-      <div class="page-header"><div><h1>LABOUR <span>LOG</span></h1><p>Daily headcount by trade · JBCC-compliant record</p></div></div>
+    
+    <!-- SITE INFO -->
+    <div class="page" id="page-siteinfo">
+      <div class="page-header"><div><h1>SITE <span>INFORMATION</span></h1><p>Project details & contract reference data</p></div></div>
       <div class="form-section">
-        <div class="form-section-header"><div class="section-icon">🏗️</div><h3>Site Information</h3></div>
+        <div class="form-section-header"><div class="section-icon">🏗️</div><h3>Project Details</h3></div>
         <div class="form-section-body">
           <div class="form-row col3">
             <div class="form-group"><label>Project Name</label><input type="text" id="projectName" placeholder="e.g. SARB HQ Phase 2" oninput="updateSidebar()"/></div>
@@ -226,11 +220,16 @@
             <div class="form-group"><label>Contract No.</label><input type="text" id="contractNo" placeholder="e.g. VDLV-2024-017"/></div>
             <div class="form-group"><label>Employer</label><input type="text" id="employer" placeholder="e.g. SARB / City of Tshwane"/></div>
             <div class="form-group"><label>Contract Form</label>
-              <select><option>JBCC PBA 6.2</option><option>JBCC Minor Works</option><option>GCC 2015</option><option>NEC4</option></select>
+              <select id="contractForm"><option>JBCC PBA 6.2</option><option>JBCC Minor Works</option><option>GCC 2015</option><option>NEC4</option></select>
             </div>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- LABOUR -->
+    <div class="page" id="page-labour">
+      <div class="page-header"><div><h1>LABOUR <span>LOG</span></h1><p>Daily headcount by trade · JBCC-compliant record</p></div></div>
       <div class="form-section">
         <div class="form-section-header"><div class="section-icon">👷</div><h3>Trade Headcount</h3></div>
         <div class="form-section-body">
@@ -265,6 +264,38 @@
       </div>
     </div>
 
+    <!-- TOOL HIRE -->
+    <div class="page" id="page-toolhire">
+      <div class="page-header"><div><h1>TOOL <span>HIRE</span></h1><p>Hired tools register · daily status & off-hire tracking</p></div></div>
+      <div class="form-section">
+        <div class="form-section-header"><div class="section-icon">🔧</div><h3>Tool Hire Register</h3></div>
+        <div class="form-section-body" style="overflow-x: auto;">
+          <table class="labour-table" style="min-width: 800px;">
+            <thead><tr>
+              <th>Tool Description</th>
+              <th style="width:70px;">Qty</th>
+              <th>Supplier</th>
+              <th style="width:130px;">Hire In</th>
+              <th style="width:130px;">Expected Off-hire</th>
+              <th style="width:130px;">Actual Off-hire</th>
+              <th style="width:140px;">Reason for Hire</th>
+              <th style="width:90px;">Status</th>
+              <th>Notes</th>
+              <th style="width:36px;"></th>
+            </tr></thead>
+            <tbody id="toolHireBody"></tbody>
+          </table>
+          <button class="btn-add" onclick="addToolHireRow()">+ Add Hired Tool</button>
+          <div style="margin-top:14px;display:flex;gap:20px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;box-shadow:0 0 6px rgba(82,201,122,0.5);"></span>Active</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);"><span style="width:8px;height:8px;border-radius:50%;background:var(--gold);display:inline-block;"></span>Nearing Off-hire</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);"><span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;box-shadow:0 0 6px rgba(224,82,82,0.5);"></span>Overdue</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);"><span style="width:8px;height:8px;border-radius:50%;background:var(--text-muted);display:inline-block;"></span>Returned</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- MATERIALS -->
     <div class="page" id="page-materials">
       <div class="page-header"><div><h1>MATERIAL <span>DELIVERIES</span></h1><p>Delivery docket register · quantities & supplier details</p></div></div>
@@ -282,7 +313,7 @@
 
     <!-- PROGRESS -->
     <div class="page" id="page-progress">
-      <div class="page-header"><div><h1>ACTIVITY <span>PROGRESS</span></h1><p>% complete per programme activity · updated daily</p></div></div>
+      <div class="page-header"><div><h1>ACTIVITY <span>PROGRESS</span></h1><p>Detailed daily progress descriptions</p></div></div>
       <div class="form-section">
         <div class="form-section-header"><div class="section-icon">📊</div><h3>Programme Activities</h3></div>
         <div class="form-section-body">
@@ -337,12 +368,15 @@
     <!-- REPORT -->
     <div class="page" id="page-report">
       <div class="page-header"><div><h1>DAILY SITE <span>REPORT</span></h1><p>Auto-generated from today's entries · ready to distribute</p></div></div>
-      <div class="cards-row col3" style="margin-bottom:24px;">
+      <div class="cards-row col4" style="margin-bottom:24px;">
         <div class="card" style="cursor:pointer;text-align:center;" onclick="generateReport()">
           <div style="font-size:28px;margin-bottom:8px;">📄</div><div style="font-size:12px;font-weight:600;color:var(--gold);">Generate Report</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Compile today's log</div>
         </div>
         <div class="card" style="cursor:pointer;text-align:center;" onclick="copyReport()">
           <div style="font-size:28px;margin-bottom:8px;">📋</div><div style="font-size:12px;font-weight:600;color:var(--text);">Copy to Clipboard</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Paste into email / WhatsApp</div>
+        </div>
+        <div class="card" style="cursor:pointer;text-align:center;" onclick="downloadPDF()">
+          <div style="font-size:28px;margin-bottom:8px;">📥</div><div style="font-size:12px;font-weight:600;color:var(--gold);">Download PDF</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Template-ready PDF</div>
         </div>
         <div class="card" style="cursor:pointer;text-align:center;" onclick="clearAll()">
           <div style="font-size:28px;margin-bottom:8px;">🔄</div><div style="font-size:12px;font-weight:600;color:var(--text);">Reset for New Day</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Clear all entries</div>
@@ -363,15 +397,21 @@ const timelineState = {};
 
 document.addEventListener('DOMContentLoaded', () => {
   const today = new Date();
+  
+  if (!loadFromLocalStorage()) {
+    // Default mock data only if nothing saved
+    ['Concrete Gang', 'Steel Fixers', 'Bricklayers', 'General Workers'].forEach(t => addLabourRow(t));
+    [{ name:'Tower Crane', id:'TC-01' }, { name:'Concrete Pump', id:'CP-01' }, { name:'TLB / Excavator', id:'TLB-02' }].forEach(p => addPlantRow(p));
+    [{ name:'Reinforced Concrete Structure — Columns', code:'2110' }, { name:'Formwork & Shuttering', code:'2200' }, { name:'Brickwork — External Envelope', code:'3100' }, { name:'Roof Structure', code:'5100' }, { name:'Waterproofing — Basement', code:'4210' }].forEach(a => addActivity(a));
+  }
+  
+  // ALWAYS force the current logged date to today, overriding any loaded date (prev day's memory)
   document.getElementById('logDate').value = today.toISOString().split('T')[0];
   document.getElementById('liveDateBadge').textContent = today.toLocaleDateString('en-ZA',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase();
   document.getElementById('dashboardDate').textContent = today.toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   const weekNum = getWeekNumber(today);
   document.getElementById('weekDisplay').textContent = 'W' + weekNum;
   document.getElementById('sidebarWeek').textContent = '📅 Week ' + weekNum;
-  ['Concrete Gang', 'Steel Fixers', 'Bricklayers', 'General Workers'].forEach(t => addLabourRow(t));
-  [{ name:'Tower Crane', id:'TC-01' }, { name:'Concrete Pump', id:'CP-01' }, { name:'TLB / Excavator', id:'TLB-02' }].forEach(p => addPlantRow(p));
-  [{ name:'Reinforced Concrete Structure — Columns', code:'2110' }, { name:'Formwork & Shuttering', code:'2200' }, { name:'Brickwork — External Envelope', code:'3100' }, { name:'Roof Structure', code:'5100' }, { name:'Waterproofing — Basement', code:'4210' }].forEach(a => addActivity(a));
 });
 
 function getWeekNumber(d) { const onejan = new Date(d.getFullYear(), 0, 1); return Math.ceil((((d - onejan) / 86400000) + onejan.getDay() + 1) / 7); }
@@ -393,6 +433,81 @@ function addPlantRow(preset = {}) {
 }
 function recalcPlant() { let active = 0; document.querySelectorAll('.pstatus').forEach(s => { if (s.value==='operational') active++; }); document.getElementById('statPlant').textContent = active; pushTimeline('plant', active + ' plant units operational'); }
 
+let thC = 0;
+function addToolHireRow() {
+  const id = ++thC; const tr = document.createElement('tr'); tr.id = 'thr-' + id;
+  tr.innerHTML = `<td><input type="text" placeholder="Tool name/desc"/></td>
+  <td><input type="number" min="1" value="1" style="width:60px;" oninput="recalcToolHire()"/></td>
+  <td><input type="text" placeholder="Supplier"/></td>
+  <td><input type="date" class="th-in" onchange="recalcToolHire()"/></td>
+  <td><input type="date" class="th-out" onchange="recalcToolHire()"/></td>
+  <td><input type="date" class="th-actual" onchange="recalcToolHire()"/></td>
+  <td><select style="width:130px;"><option value="">Select...</option><option>Client instruction</option><option>Non-conformance</option><option>Damaged own tools</option><option>Calibration</option><option>Other</option></select></td>
+  <td><span class="status-tag not-started" id="th-stat-${id}">Active</span></td>
+  <td><input type="text" placeholder="Notes"/></td>
+  <td><button class="btn-remove" onclick="removeEl('thr-${id}');recalcToolHire()">×</button></td>`;
+  document.getElementById('toolHireBody').appendChild(tr); recalcToolHire();
+}
+
+function recalcToolHire() {
+  let active = 0, nearing = 0, overdue = 0;
+  const todayStr = document.getElementById('logDate').value || new Date().toISOString().split('T')[0];
+  
+  // Clear time portion to compare pure dates
+  const today = new Date(todayStr);
+  today.setHours(0,0,0,0);
+  
+  document.querySelectorAll('[id^="thr-"]').forEach(tr => {
+    const qty = parseInt(tr.querySelector('input[type="number"]').value) || 0;
+    const outDateStr = tr.querySelector('.th-out').value;
+    const actualDateStr = tr.querySelector('.th-actual').value;
+    const tag = document.getElementById('th-stat-' + tr.id.split('-')[1]);
+    
+    if (actualDateStr) {
+      tag.textContent = 'Returned'; tag.className = 'status-tag not-started';
+      return; 
+    }
+    if (!outDateStr) {
+      active += qty;
+      tag.textContent = 'Active'; tag.className = 'status-tag on-track';
+      return;
+    }
+    
+    const outD = new Date(outDateStr);
+    outD.setHours(0,0,0,0);
+    const diffDays = Math.floor((outD - today) / (1000 * 3600 * 24));
+    
+    if (diffDays < 0) {
+      overdue += qty; active += qty;
+      tag.textContent = 'Overdue'; tag.className = 'status-tag behind';
+    } else if (diffDays <= 3) {
+      nearing += qty; active += qty;
+      tag.textContent = 'Nearing Off-hire'; tag.className = 'status-tag complete';
+    } else {
+      active += qty;
+      tag.textContent = 'Active'; tag.className = 'status-tag on-track';
+    }
+  });
+  
+  const alertCard = document.getElementById('hireAlertCard');
+  if (alertCard) {
+    if (nearing > 0 || overdue > 0) {
+      alertCard.style.display = 'block';
+      let msg = '';
+      if (overdue > 0) msg += `<span style="color:var(--red);font-weight:bold;">${overdue} overdue</span>`;
+      if (nearing > 0) msg += (msg ? ' · ' : '') + `<span style="color:var(--gold);font-weight:bold;">${nearing} nearing</span>`;
+      document.getElementById('statToolsNearing').innerHTML = msg;
+      
+      const badge = document.getElementById('toolHireBadge');
+      badge.style.display = 'inline-block';
+      badge.textContent = overdue > 0 ? overdue : '!';
+    } else {
+      alertCard.style.display = 'none';
+      document.getElementById('toolHireBadge').style.display = 'none';
+    }
+  }
+}
+
 let mc = 0;
 function addMaterialRow() {
   const id = ++mc; const tr = document.createElement('tr'); tr.id = 'mr-' + id;
@@ -403,18 +518,76 @@ function recalcMat() { const n = document.querySelectorAll('#materialsBody tr').
 
 let ac = 0;
 function addActivity(preset = {}) {
-  const id = ++ac; const pct = preset.planned || 0; const div = document.createElement('div'); div.className = 'activity-item'; div.id = 'act-' + id;
-  div.innerHTML = `<div class="activity-header"><div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;"><input type="text" placeholder="Activity name" value="${preset.name||''}" style="flex:1;min-width:0;" oninput="updateActivitySummary()"/><input type="text" placeholder="Code" value="${preset.code||''}" style="width:72px;font-family:'DM Mono',monospace;font-size:11px;" title="Cost / programme code"/></div><div style="display:flex;align-items:center;gap:8px;margin-left:12px;"><span class="status-tag not-started" id="atag-${id}">Not Started</span><button class="btn-remove" onclick="removeEl('act-${id}');updateActivitySummary()">×</button></div></div><div class="progress-bar-wrapper"><div class="progress-bar-fill" id="abar-${id}" style="width:${pct}%"></div></div><div class="activity-controls"><input type="range" min="0" max="100" value="${pct}" id="arange-${id}" oninput="syncAct(${id})"/><input type="number" min="0" max="100" value="${pct}" id="anum-${id}" oninput="syncActNum(${id})"/><span style="font-size:11px;color:var(--text-muted);">%</span></div><div style="margin-top:8px;"><input type="text" placeholder="Notes (delays, issues, next steps...)" style="font-size:11px;color:var(--text-dim);"/></div>`;
-  document.getElementById('activitiesContainer').appendChild(div); syncAct(id);
+  const id = ++ac; const div = document.createElement('div'); div.className = 'activity-item'; div.id = 'act-' + id;
+  div.innerHTML = `<div class="activity-header">
+    <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
+      <input type="text" placeholder="Activity name" value="${preset.name||''}" style="flex:1;min-width:0;" oninput="updateActivitySummary()"/>
+      <input type="text" placeholder="Code" value="${preset.code||''}" style="width:72px;font-family:'DM Mono',monospace;font-size:11px;" title="Cost / programme code"/>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:12px;">
+      <select onchange="syncActStatus(${id})" class="act-status" id="astat-${id}" style="width:120px;">
+        <option value="Not Started">Not Started</option>
+        <option value="In Progress" selected>In Progress</option>
+        <option value="Delayed">Delayed</option>
+        <option value="Complete">Complete</option>
+      </select>
+      <span class="status-tag on-track" id="atag-${id}">In Progress</span>
+      <button class="btn-remove" onclick="removeEl('act-${id}');updateActivitySummary()">×</button>
+    </div>
+  </div>
+  <div style="margin-top:8px;">
+    <textarea placeholder="Daily progress description (e.g. 'Column Casts: Column 4, 5, 6 cast today.')..." class="act-desc" id="adesc-${id}" oninput="updateActivitySummary()"></textarea>
+  </div>
+  <div style="margin-top:8px; display:flex; gap:10px;">
+    <input type="text" class="act-note" id="anote-${id}" placeholder="Next steps or quick notes..." style="flex:1;"/>
+    <button class="btn-add" style="margin-top:0; width:auto; padding:6px 12px; border-color:var(--red); color:var(--red);" onclick="logDelayForAct(${id})">+ Log Delay Event</button>
+  </div>`;
+  document.getElementById('activitiesContainer').appendChild(div);
+  syncActStatus(id);
 }
-function syncAct(id) { const val = parseInt(document.getElementById('arange-'+id).value)||0; document.getElementById('anum-'+id).value = val; const bar = document.getElementById('abar-'+id); bar.style.width = val + '%'; bar.className = 'progress-bar-fill' + (val===100?' green':val>0&&val<40?' amber':''); const tag = document.getElementById('atag-'+id); if (val===0) { tag.textContent='Not Started'; tag.className='status-tag not-started'; } else if (val===100) { tag.textContent='Complete'; tag.className='status-tag complete'; } else { tag.textContent='In Progress'; tag.className='status-tag on-track'; } updateActivitySummary(); }
-function syncActNum(id) { const val = Math.min(100, Math.max(0, parseInt(document.getElementById('anum-'+id).value)||0)); document.getElementById('arange-'+id).value = val; syncAct(id); }
-function updateActivitySummary() { const ranges = document.querySelectorAll('[id^="arange-"]'); let total = 0; let html = ''; ranges.forEach(r => { const pct = parseInt(r.value)||0; total += pct; const aid = r.id.replace('arange-',''); const nameEl = document.querySelector('#act-'+aid+' input[type="text"]'); const name = nameEl ? (nameEl.value.substring(0,30)||'Activity') : 'Activity'; const col = pct===100?'var(--green)':pct>0?'var(--gold)':'var(--text-muted)'; html += `<div style="color:${col};">${name} — ${pct}%</div>`; }); const avg = ranges.length ? Math.round(total / ranges.length) : 0; const circ = 226.2; document.getElementById('progressCircle').style.strokeDashoffset = circ - (circ * avg / 100); document.getElementById('progressCircleLabel').textContent = avg + '%'; document.getElementById('activitySummaryList').innerHTML = html || 'No activities.'; pushTimeline('progress', 'Overall progress: ' + avg + '%'); }
+
+function syncActStatus(id) { 
+  const val = document.getElementById('astat-'+id).value; 
+  const tag = document.getElementById('atag-'+id); 
+  if (val==='Not Started') { tag.className='status-tag not-started'; } 
+  else if (val==='Complete') { tag.className='status-tag complete'; } 
+  else if (val==='Delayed') { tag.className='status-tag behind'; }
+  else { tag.className='status-tag on-track'; } 
+  tag.textContent = val;
+  updateActivitySummary(); 
+}
+
+function updateActivitySummary() { 
+  let html = ''; let count = 0;
+  document.querySelectorAll('[id^="act-"]').forEach(act => { 
+    count++;
+    const nameEl = act.querySelector('input[type="text"]'); 
+    const name = nameEl ? (nameEl.value||'Activity') : 'Activity'; 
+    const desc = act.querySelector('.act-desc')?.value || '';
+    const stat = act.querySelector('.act-status')?.value || '';
+    const col = stat==='Complete'?'var(--green)':stat==='Delayed'?'var(--red)':stat==='In Progress'?'var(--gold)':'var(--text-muted)'; 
+    html += `<div style="margin-bottom:8px; background:var(--surface2); padding:10px; border-radius:6px; border:1px solid var(--border);">
+      <strong style="color:${col};font-weight:600;">${name}</strong> <span style="font-size:10px;color:var(--text-muted);">— ${stat}</span>
+      ${desc ? `<div style="color:var(--text);margin-top:4px;">${desc}</div>` : ''}
+    </div>`; 
+  }); 
+  document.getElementById('activitySummaryList').innerHTML = html || 'No activities.'; 
+  if (count > 0) pushTimeline('progress', count + ' activities logged today'); 
+}
+
+function logDelayForAct(id) {
+  const actName = document.querySelector('#act-'+id+' input[type="text"]').value || 'Activity';
+  document.getElementById('astat-'+id).value = 'Delayed';
+  syncActStatus(id);
+  addDelay({ description: 'Delay on activity: ' + actName });
+  showPage('delays');
+  showToast('Delay linked. Please fill in details.');
+}
 
 let dc = 0;
-function addDelay() {
+function addDelay(preset = {}) {
   const id = ++dc; const div = document.createElement('div'); div.className = 'delay-item'; div.id = 'del-' + id;
-  div.innerHTML = `<div class="form-group"><label>Delay Category</label><select onchange="recalcDelays()"><option value="">Select type</option><option>Employer Risk — Drawing Issue (Cl. 25.1)</option><option>Employer Risk — Late Instructions (Cl. 25.2)</option><option>Force Majeure — Weather (Cl. 25.6)</option><option>Nominated Subcontractor (Cl. 25.7)</option><option>Access / Obstruction</option><option>Utility / Services Strike</option><option>Material Non-delivery</option><option>Contractor Risk</option><option>Other</option></select></div><div class="form-group"><label>Duration (hrs)</label><input type="number" min="0" max="24" step="0.5" placeholder="0" oninput="recalcDelays()"/></div><div class="form-group"><label>JBCC Clause</label><input type="text" placeholder="e.g. 25.2.1"/></div><div class="form-group"><label>Description</label><input type="text" placeholder="Brief description of delay event"/></div><button class="btn-remove" onclick="removeEl('del-${id}');recalcDelays()">×</button>`;
+  div.innerHTML = `<div class="form-group"><label>Delay Category</label><select onchange="recalcDelays()"><option value="">Select type</option><option>Employer Risk — Drawing Issue (Cl. 25.1)</option><option>Employer Risk — Late Instructions (Cl. 25.2)</option><option>Force Majeure — Weather (Cl. 25.6)</option><option>Nominated Subcontractor (Cl. 25.7)</option><option>Access / Obstruction</option><option>Utility / Services Strike</option><option>Material Non-delivery</option><option>Contractor Risk</option><option>Other</option></select></div><div class="form-group"><label>Duration (hrs)</label><input type="number" min="0" max="24" step="0.5" placeholder="0" oninput="recalcDelays()"/></div><div class="form-group"><label>JBCC Clause</label><input type="text" placeholder="e.g. 25.2.1"/></div><div class="form-group"><label>Description</label><input type="text" placeholder="Brief description of delay event" value="${preset.description || ''}"/></div><button class="btn-remove" onclick="removeEl('del-${id}');recalcDelays()">×</button>`;
   document.getElementById('delayContainer').appendChild(div); recalcDelays();
 }
 function recalcDelays() { const n = document.querySelectorAll('[id^="del-"]').length; document.getElementById('statDelays').textContent = n; document.getElementById('delayBadge').textContent = n; if (n > 0) pushTimeline('delays', n + ' delay event(s) logged'); }
@@ -427,7 +600,13 @@ function removeEl(id) { const el = document.getElementById(id); if (el) el.remov
 
 function generateReport() {
   const date = document.getElementById('logDate').value || '—'; const proj = document.getElementById('projectName').value || 'PROJECT NAME'; const agent = document.getElementById('siteAgent').value || '—'; const contract = document.getElementById('contractNo').value || '—'; const employer = document.getElementById('employer').value || '—'; const labour = document.getElementById('totalLabour').textContent; const plant = document.getElementById('statPlant').textContent; const deliveries = document.getElementById('statDeliveries').textContent; const delays = document.getElementById('statDelays').textContent; const wAM = weatherState.AM || 'Not recorded'; const wPM = weatherState.PM || 'Not recorded'; const workable = document.getElementById('workPossible').value || 'Not recorded'; const rain = document.getElementById('rainfall').value || '0'; const temp = document.getElementById('temperature').value || '—';
-  let actText = ''; document.querySelectorAll('[id^="arange-"]').forEach(r => { const aid = r.id.replace('arange-',''); const nameEl = document.querySelector('#act-'+aid+' input[type="text"]'); const name = nameEl ? nameEl.value || 'Activity' : 'Activity'; actText += `    • ${name.padEnd(45,'.')} ${r.value}%\n`; });
+  let actText = ''; document.querySelectorAll('[id^="act-"]').forEach(r => { 
+    const nameEl = r.querySelector('input[type="text"]'); 
+    const name = nameEl ? nameEl.value || 'Activity' : 'Activity'; 
+    const stat = r.querySelector('.act-status')?.value || 'Unknown';
+    const desc = r.querySelector('.act-desc')?.value.replace(/\n/g, ' ') || 'No details given.';
+    actText += `    • [${stat}] ${name}\n      > ${desc}\n`; 
+  });
   let delayText = ''; document.querySelectorAll('[id^="del-"]').forEach(d => { const inputs = d.querySelectorAll('input,select'); const cat = inputs[0]?.value || '—'; const hrs = inputs[1]?.value || '—'; const clause = inputs[2]?.value || '—'; const desc = inputs[3]?.value || '—'; delayText += `    • [${clause}] ${cat} | ${hrs}hrs | ${desc}\n`; });
   const r = `══════════════════════════════════════════════════════════
   JC VAN DER LINDE & VENTER PROJECTS (PTY) LTD
@@ -478,9 +657,224 @@ ${delays === '0' ? '    No delay events recorded today.\n' : delayText}───
 }
 
 function copyReport() { const t = document.getElementById('reportPreview').textContent; if (t.startsWith('Click')) { showToast('Generate the report first'); return; } navigator.clipboard.writeText(t).then(() => showToast('Copied to clipboard ✓')); }
-function saveDailyLog() { showToast('Daily log saved'); }
-function clearAll() { if (!confirm('Clear all entries and reset for a new day?')) return; ['labourBody','plantBody','materialsBody'].forEach(id => document.getElementById(id).innerHTML = ''); document.getElementById('activitiesContainer').innerHTML = ''; document.getElementById('delayContainer').innerHTML = ''; document.getElementById('reportPreview').textContent = 'Click "Generate Report" to compile today\'s entries.'; lc=pc=mc=ac=dc=0; Object.keys(timelineState).forEach(k => delete timelineState[k]); recalcLabour(); recalcPlant(); recalcMat(); recalcDelays(); updateActivitySummary(); showToast('Reset — ready for new day'); }
+function saveDailyLog() { saveToLocalStorage(); showToast('Daily log saved to browser storage ✓'); }
+function clearAll() { if (!confirm('Clear all entries and reset for a new day?')) return; ['labourBody','plantBody','materialsBody','toolHireBody'].forEach(id => document.getElementById(id).innerHTML = ''); document.getElementById('activitiesContainer').innerHTML = ''; document.getElementById('delayContainer').innerHTML = ''; document.getElementById('reportPreview').textContent = 'Click "Generate Report" to compile today\'s entries.'; lc=pc=mc=ac=dc=thC=0; Object.keys(timelineState).forEach(k => delete timelineState[k]); weatherState.AM = ''; weatherState.PM = ''; document.querySelectorAll('.weather-btn').forEach(b => b.classList.remove('selected')); localStorage.removeItem('vdlv_tracker_state'); recalcLabour(); recalcPlant(); recalcMat(); recalcDelays(); recalcToolHire(); updateActivitySummary(); showToast('Reset — ready for new day'); }
 function showToast(msg, dur=3000) { const t = document.getElementById('toast'); document.getElementById('toastMsg').textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), dur); }
+
+function saveToLocalStorage() {
+  const state = {
+    siteInfo: {
+      projectName: document.getElementById('projectName').value,
+      siteAgent: document.getElementById('siteAgent').value,
+      contractNo: document.getElementById('contractNo').value,
+      employer: document.getElementById('employer').value,
+      contractForm: document.getElementById('contractForm') ? document.getElementById('contractForm').value : ''
+    },
+    weather: {
+      AM: weatherState.AM, PM: weatherState.PM,
+      workPossible: document.getElementById('workPossible').value,
+      rainfall: document.getElementById('rainfall').value,
+      temperature: document.getElementById('temperature').value
+    },
+    labour: Array.from(document.querySelectorAll('#labourBody tr')).map(tr => {
+      const inputs = tr.querySelectorAll('input, select');
+      return { trade: inputs[0].value, name: inputs[1].value, count: inputs[2].value, hrs: inputs[3].value, status: inputs[4].value };
+    }),
+    plant: Array.from(document.querySelectorAll('#plantBody tr')).map(tr => {
+      const inputs = tr.querySelectorAll('input, select');
+      return { name: inputs[0].value, id: inputs[1].value, operator: inputs[2].value, hrs: inputs[3].value, status: inputs[4].value };
+    }),
+    materials: Array.from(document.querySelectorAll('#materialsBody tr')).map(tr => {
+      const inputs = tr.querySelectorAll('input, select');
+      return { desc: inputs[0].value, supplier: inputs[1].value, docket: inputs[2].value, qty: inputs[3].value, unit: inputs[4].value, time: inputs[5].value };
+    }),
+    toolHire: Array.from(document.querySelectorAll('#toolHireBody tr')).map(tr => {
+      const inputs = tr.querySelectorAll('input, select');
+      return { desc: inputs[0].value, qty: inputs[1].value, supplier: inputs[2].value, in: inputs[3].value, out: inputs[4].value, actual: inputs[5].value, reason: inputs[6].value, notes: inputs[7].value };
+    }),
+    activities: Array.from(document.querySelectorAll('.activity-item')).map(act => {
+      const name = act.querySelector('input[type="text"]').value;
+      const code = act.querySelectorAll('input[type="text"]')[1].value;
+      const status = act.querySelector('.act-status').value;
+      const desc = act.querySelector('.act-desc').value;
+      const note = act.querySelector('.act-note').value;
+      return { name, code, status, desc, note };
+    }),
+    delays: Array.from(document.querySelectorAll('.delay-item')).map(del => {
+      const inputs = del.querySelectorAll('input, select');
+      return { category: inputs[0].value, hrs: inputs[1].value, clause: inputs[2].value, desc: inputs[3].value };
+    })
+  };
+  localStorage.setItem('vdlv_tracker_state', JSON.stringify(state));
+}
+
+function loadFromLocalStorage() {
+  const data = localStorage.getItem('vdlv_tracker_state');
+  if (!data) return false;
+  try {
+    const state = JSON.parse(data);
+    
+    if (state.siteInfo) {
+      document.getElementById('projectName').value = state.siteInfo.projectName || '';
+      document.getElementById('siteAgent').value = state.siteInfo.siteAgent || '';
+      document.getElementById('contractNo').value = state.siteInfo.contractNo || '';
+      document.getElementById('employer').value = state.siteInfo.employer || '';
+      if (document.getElementById('contractForm')) document.getElementById('contractForm').value = state.siteInfo.contractForm || '';
+    }
+    
+    if (state.weather) {
+      weatherState.AM = state.weather.AM || '';
+      weatherState.PM = state.weather.PM || '';
+      document.getElementById('workPossible').value = state.weather.workPossible || '';
+      document.getElementById('rainfall').value = state.weather.rainfall || '';
+      document.getElementById('temperature').value = state.weather.temperature || '';
+      ['AM','PM'].forEach(period => {
+        if (weatherState[period]) {
+          document.querySelectorAll('#weather'+period+' .weather-btn').forEach(btn => {
+            if (btn.textContent.includes(weatherState[period])) btn.classList.add('selected');
+          });
+        }
+      });
+      document.getElementById('dashWeather').textContent = (weatherState.AM||'—') + ' / ' + (weatherState.PM||'—');
+    }
+
+    document.getElementById('labourBody').innerHTML = ''; lc = 0;
+    (state.labour || []).forEach(l => {
+      addLabourRow(l.trade);
+      const inputs = document.getElementById('lr-' + lc).querySelectorAll('input, select');
+      inputs[1].value = l.name||''; inputs[2].value = l.count||'0'; inputs[3].value = l.hrs||'9'; inputs[4].value = l.status||'Present';
+    });
+
+    document.getElementById('plantBody').innerHTML = ''; pc = 0;
+    (state.plant || []).forEach(p => {
+      addPlantRow({name:p.name, id:p.id});
+      const inputs = document.getElementById('pr-' + pc).querySelectorAll('input, select');
+      inputs[2].value = p.operator||''; inputs[3].value = p.hrs||'9'; inputs[4].value = p.status||'operational';
+    });
+
+    document.getElementById('materialsBody').innerHTML = ''; mc = 0;
+    (state.materials || []).forEach(m => {
+      addMaterialRow();
+      const inputs = document.getElementById('mr-' + mc).querySelectorAll('input, select');
+      inputs[0].value = m.desc||''; inputs[1].value = m.supplier||''; inputs[2].value = m.docket||''; inputs[3].value = m.qty||''; inputs[4].value = m.unit||'m³'; inputs[5].value = m.time||'';
+    });
+
+    document.getElementById('toolHireBody').innerHTML = ''; thC = 0;
+    (state.toolHire || []).forEach(t => {
+      addToolHireRow();
+      const inputs = document.getElementById('thr-' + thC).querySelectorAll('input, select');
+      inputs[0].value = t.desc||''; inputs[1].value = t.qty||'1'; inputs[2].value = t.supplier||''; inputs[3].value = t.in||''; inputs[4].value = t.out||''; inputs[5].value = t.actual||''; inputs[6].value = t.reason||''; inputs[7].value = t.notes||'';
+    });
+
+    document.getElementById('activitiesContainer').innerHTML = ''; ac = 0;
+    (state.activities || []).forEach(a => {
+      addActivity({name: a.name, code: a.code});
+      const act = document.getElementById('act-' + ac);
+      act.querySelector('.act-status').value = a.status || 'In Progress';
+      act.querySelector('.act-desc').value = a.desc || '';
+      act.querySelector('.act-note').value = a.note || '';
+      syncActStatus(ac);
+    });
+
+    document.getElementById('delayContainer').innerHTML = ''; dc = 0;
+    (state.delays || []).forEach(d => {
+      addDelay();
+      const inputs = document.getElementById('del-' + dc).querySelectorAll('input, select');
+      inputs[0].value = d.category||''; inputs[1].value = d.hrs||''; inputs[2].value = d.clause||''; inputs[3].value = d.desc||'';
+    });
+
+    recalcLabour(); recalcPlant(); recalcMat(); recalcToolHire(); recalcDelays(); updateDash();
+    return true;
+  } catch (e) {
+    console.error('Failed to parse active state', e);
+    return false;
+  }
+}
+
+
+async function downloadPDF() {
+  if (typeof PDFLib === 'undefined') {
+    showToast('PDF library not resolved yet. Check internet.');
+    return;
+  }
+  
+  const { PDFDocument, rgb, StandardFonts } = PDFLib;
+  const proj = document.getElementById('projectName').value || 'Unspecified Project';
+  const date = document.getElementById('logDate').value || new Date().toISOString().split('T')[0];
+  const contract = document.getElementById('contractNo').value || '—';
+  
+  const pdfDoc = await PDFDocument.create();
+  const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const page = pdfDoc.addPage([595.28, 841.89]); // A4 Size
+  const { width, height } = page.getSize();
+  
+  // Colors
+  const vdlvYellow = rgb(0.98, 0.76, 0.05); // Approximating #FAC20C
+  const vdlvBlack = rgb(0.05, 0.05, 0.05);
+  const textGrey = rgb(0.3, 0.3, 0.3);
+  const lineGrey = rgb(0.7, 0.7, 0.7);
+
+  // Top Right Text
+  page.drawText('JC Van der Linde & Venter Projects (Pty) Ltd', { x: width - 280, y: height - 50, size: 10, font: fontRegular, color: textGrey });
+
+  // Logo Block
+  const logoY = height - 140;
+  // Black Box (left)
+  page.drawRectangle({ x: 50, y: logoY, width: 100, height: 70, color: vdlvBlack });
+  page.drawText('VV', { x: 72, y: logoY + 18, size: 54, font: fontBold, color: vdlvYellow });
+  // Yellow Box (right)
+  page.drawRectangle({ x: 150, y: logoY, width: 230, height: 70, color: vdlvYellow });
+  page.drawText('J.C. VAN DER LINDE', { x: 165, y: logoY + 45, size: 16, font: fontBold, color: vdlvBlack });
+  page.drawText('& VENTER PROJECTS', { x: 165, y: logoY + 25, size: 16, font: fontBold, color: vdlvBlack });
+  page.drawText('(Pty) Ltd', { x: 260, y: logoY + 8, size: 12, font: fontBold, color: vdlvBlack });
+
+  // Title
+  page.drawText('Daily Site Activity Report', { x: 50, y: logoY - 50, size: 22, font: fontRegular, color: vdlvBlack });
+  
+  // Separator Line
+  page.drawLine({ start: { x: 50, y: logoY - 70 }, end: { x: width - 50, y: logoY - 70 }, thickness: 1, color: lineGrey });
+
+  // Details Section
+  let curY = logoY - 110;
+  const drawLabelVal = (lbl, val) => {
+    page.drawText(lbl, { x: 50, y: curY, size: 11, font: fontBold, color: vdlvBlack });
+    const lblWidth = fontBold.widthOfTextAtSize(lbl, 11);
+    page.drawText(' ' + val, { x: 50 + lblWidth, y: curY, size: 11, font: fontRegular, color: vdlvBlack });
+    curY -= 25;
+  };
+
+  drawLabelVal('Project Title:', proj);
+  drawLabelVal('Contract No.:', contract);
+  drawLabelVal('Contractor:', 'JC Van der Linde & Venter Projects (Pty) Ltd');
+  drawLabelVal('Report Date:', date);
+  drawLabelVal('Total Labour on Site:', document.getElementById('totalLabour').textContent);
+  drawLabelVal('Plant / Equipment Active:', document.getElementById('statPlant').textContent);
+  drawLabelVal('Delay Events Logged:', document.getElementById('statDelays').textContent);
+
+  // Footer
+  const footerY = 40;
+  page.drawLine({ start: { x: 50, y: footerY + 20 }, end: { x: width - 50, y: footerY + 20 }, thickness: 1, color: lineGrey });
+  
+  const footerText = `${proj} | Daily Site Report : ${date}`;
+  const fWidth = fontRegular.widthOfTextAtSize(footerText, 10);
+  page.drawText(footerText, { x: width - 100 - fWidth, y: footerY, size: 10, font: fontRegular, color: textGrey });
+  
+  // Page number block
+  page.drawRectangle({ x: width - 80, y: footerY - 10, width: 30, height: 30, color: vdlvBlack });
+  page.drawText('1', { x: width - 69, y: footerY, size: 12, font: fontBold, color: rgb(1,1,1) });
+
+  const pdfBytes = await pdfDoc.save();
+  const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `VDLV_Site_Report_${date}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  showToast('Standard PDF Downloaded');
+}
 </script>
 </body>
 </html>
