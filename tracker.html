@@ -128,7 +128,9 @@
 <body>
 <header>
   <div class="logo">
-    <div class="logo-mark"><span>VDL</span></div>
+    <div style="background:var(--black); width:36px; height:32px; display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:2px; margin-right:14px; box-shadow: 0 0 10px rgba(201,168,76,0.2);">
+      <span style="color:var(--gold); font-family:Helvetica, Arial, sans-serif; font-size:32px; font-weight:900; letter-spacing:-3px; line-height:1; margin-left:-2px; margin-top:2px;">VV</span>
+    </div>
     <div class="logo-text"><strong>VDLV PROJECTS</strong><small>Site Activity Tracker</small></div>
   </div>
   <div class="header-right">
@@ -864,14 +866,12 @@ async function downloadPDF() {
   page.drawRectangle({ x: width - 80, y: footerY - 10, width: 30, height: 30, color: vdlvBlack });
   page.drawText('1', { x: width - 69, y: footerY, size: 12, font: fontBold, color: rgb(1,1,1) });
 
-  const pdfBytes = await pdfDoc.save();
-  const bytes = new Uint8Array(pdfBytes);
-  const blob = new Blob([bytes], { type: 'application/pdf' });
-  const url = URL.createObjectURL(blob);
+  // Use base64 data URI to force proper download behavior bypassing Blob UUID restrictions
+  const pdfBase64 = await pdfDoc.saveAsBase64({ dataUri: true });
   
   const a = document.createElement('a');
   a.style.display = 'none';
-  a.href = url;
+  a.href = pdfBase64;
   
   const safeDate = date.replace(/[^0-9a-zA-Z-]/g, '');
   a.download = `VDLV_Site_Report_${safeDate}.pdf`;
@@ -881,7 +881,6 @@ async function downloadPDF() {
   
   setTimeout(() => {
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   }, 100);
   
   showToast('Report PDF Downloaded');
