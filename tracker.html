@@ -865,15 +865,26 @@ async function downloadPDF() {
   page.drawText('1', { x: width - 69, y: footerY, size: 12, font: fontBold, color: rgb(1,1,1) });
 
   const pdfBytes = await pdfDoc.save();
-  const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+  const bytes = new Uint8Array(pdfBytes);
+  const blob = new Blob([bytes], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
+  
   const a = document.createElement('a');
+  a.style.display = 'none';
   a.href = url;
-  a.download = `VDLV_Site_Report_${date}.pdf`;
+  
+  const safeDate = date.replace(/[^0-9a-zA-Z-]/g, '');
+  a.download = `VDLV_Site_Report_${safeDate}.pdf`;
+  
   document.body.appendChild(a);
   a.click();
-  document.body.removeChild(a);
-  showToast('Standard PDF Downloaded');
+  
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
+  
+  showToast('Report PDF Downloaded');
 }
 </script>
 </body>
